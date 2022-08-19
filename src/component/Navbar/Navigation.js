@@ -20,8 +20,8 @@ export default function Navbar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/reqSig" activeClassName="nav-active">
-            <i className="fas fa-vote-yea" /> Request Signature
+          <NavLink to="/casting" activeClassName="nav-active">
+            <i className="fas fa-vote-yea" /> Casting
           </NavLink>
         </li>
         <li>

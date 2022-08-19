@@ -4,6 +4,7 @@ import { BrowserRouter as BrowserRouter, Routes, Route, Link } from "react-route
 import Home from "./component/Home";
 
 import Voting from "./component/Voting/Voting";
+import Casting from "./component/casting/Casting";
 import Results from "./component/Results/Results";
 import Registration from "./component/Registration/Registration";
 
@@ -25,6 +26,7 @@ export default class App extends Component {
             <Route exact path="/" element={ <Home/>} />
             <Route exact path="/AddCandidate" element={<AddCandidate/>} />
             <Route exact path="/Voting" element={<Voting/>} />
+            <Route exact path="/Casting" element={<Casting/>} />
             <Route exact path="/Results" element={<Results/>} />
             <Route exact path="/Registration" element={<Registration/>} />
             <Route exact path="/Verification" element={<Verification/>} />

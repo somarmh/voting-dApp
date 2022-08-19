@@ -36,9 +36,8 @@ export default class Registration extends Component {
         name: null,
         phone: null,
         votingPassword: null,
-        eligible: null,
+        eligible: false,
         //hasVoted: false,
-        isVerified: false,
         isRegistered: false,
         blindedVote: "",
         signedBlindedVote: "",
@@ -99,7 +98,6 @@ export default class Registration extends Component {
                     name: voter.name,
                     phone: voter.phone,
                     //hasVoted: voter.hasVoted,
-                    isVerified: voter.isVerified,
                     isRegistered: voter.isRegistered,
                     votingPassword: voter.votingPassword,
                     eligible: voter.eligible,
@@ -294,6 +292,14 @@ export function loadCurrentVoter(voter, isRegistered) {
           <tr>
             <th>Registered</th>
             <td>{voter.isRegistered ? "True" : "False"}</td>
+          </tr>
+          <tr>
+            <th>blindedVote</th>
+            <td>{voter.blindedVote}</td>
+          </tr>
+          <tr>
+            <th>signedBlindedVote</th>
+            <td>{voter.signedBlindedVote}</td>
           </tr>
         </table>
       </div>

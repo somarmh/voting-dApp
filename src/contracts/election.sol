@@ -94,6 +94,11 @@ contract Election {
         end = false;
     }
 
+    // Check if the signiture has been used
+    function signitureIsUsed(string memory _sig) public view returns (bool) {
+        return usedSignatures[_sig];
+    }
+
     // Get Elections details
     function getAdminName() public view returns (string memory) {
         return electionDetails.adminName;
@@ -155,7 +160,7 @@ contract Election {
         string phone;
         string votingPassword;
         bool eligible;
-        //bool hasVoted;
+        bool hasVoted;
         bool isRegistered;
         string blindedVote;
         string signedBlindedVote;
@@ -173,6 +178,7 @@ contract Election {
             phone: _phone,
             votingPassword: _votingPassword,
             eligible: false,
+            hasVoted: false,
             isRegistered: true,
             blindedVote: "",
             signedBlindedVote: ""
@@ -193,7 +199,7 @@ contract Election {
     // blinded message is recorded in order to verify whether the Organizer has provided a correct signature on the blinded msg
     function requestBlindSig(string memory _blindedVote) public {
         require(Voters[msg.sender].eligible);
-        Voters[msg.sender].eligible = false;
+        Voters[msg.sender].hasVoted = true;
         Voters[msg.sender].blindedVote = _blindedVote;
         //emit RequestToBlindlySign(msg.sender);
     }

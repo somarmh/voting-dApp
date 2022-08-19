@@ -5,4 +5,17 @@
     margin-bottom: 11px;
     float: inline-end;
   }
-  
+  .vote-btn-container {
+    transition: ease all 0.5s;
+    height: 100%;
+    width: 30%;
+    float: right;
+    align-items: center;
+    justify-content: center;
+    padding: 17px;
+  }
+  .vote-bth {
+    width: 100%;
+    height: 55px;
+    font-size: 100%;
+  }

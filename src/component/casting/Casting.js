@@ -1,5 +1,6 @@
 // Node modules
 import React, { Component } from "react";
+import {useState} from 'react';
 import { Link } from "react-router-dom";
 //import crypto = require('crypto');
 import crypto from 'crypto-browserify'
@@ -10,7 +11,7 @@ import NavbarAdmin from "../Navbar/NavigationAdmin";
 import NotInit from "../NotInit";
 
 // CSS
-import "./Voting.css";
+import "./Casting.css";
 
 // Contract
 import Election from "../../contracts/election.json";
@@ -138,10 +139,9 @@ export default class Voting extends Component {
   };
 
   renderCandidates = (candidate) => {
+
     const requestSig = async (id) => {
 
-      
-      
       
       console.log('voter1     ' + this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
@@ -177,19 +177,27 @@ export default class Voting extends Component {
             onClick={() => confirmVote(candidate.id, candidate.header)}
             className="vote-bth"
             disabled={
-              !this.state.currentVoter.isRegistered ||
-              !this.state.currentVoter.eligible ||
-              this.state.currentVoter.hasVoted
+              this.state.currentVoter.signedBlindedVote != null 
             }
           >
-            Vote
+            Cast
           </button>
-        </div>
+      </div>
       </div>
     );
   };
-
+  handleChange = e => {
+        console.log(e);
+        
+        this.setState({
+             currentVoter: {
+                signedBlindedVote: e,
+             },
+            });
+        this.props.onChange(e);
+    };
   render() {
+
     if (!this.state.provider) {
       return (
         <>
@@ -200,6 +208,7 @@ export default class Voting extends Component {
     }
 
     return (
+
       <>
         {this.state.isAdmin ? <NavbarAdmin /> : <Navbar />}
         <div>
@@ -265,12 +274,14 @@ export default class Voting extends Component {
                 ) : (
                   <>
                     {this.state.candidates.map(this.renderCandidates)}
-                    <div
-                      className="container-item"
-                      style={{ border: "1px solid black" }}
-                    >
-                      <center>That is all.</center>
-                    </div>
+                    <label className="label-home">
+                        Signiture{" "}
+                        <input
+                            className="input-home"
+                            type="text"
+                            onChange={this.handleChange}
+                        />
+                    </label>
                   </>
                 )}
               </div>

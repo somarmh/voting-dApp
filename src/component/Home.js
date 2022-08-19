@@ -77,10 +77,10 @@ export default class Home extends Component {
             }
 
             const orgnaizer = await this.state.ElectionInstance.getOrganizerAddress();
-            console.log(orgnaizer);
+            //console.log(orgnaizer);
             // Get election start and end values
             if(this.state.account === orgnaizer.toLowerCase()) {
-                console.log("SDF");
+                //console.log("SDF");
                 this.setState({ isOrganizer: true });
             }
             
