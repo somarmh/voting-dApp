@@ -152,6 +152,12 @@ contract Election {
         return voterCount;
     }
 
+    // Get ballots count
+    function getTotalBallots() public view returns (uint256) {
+        // Returns total number of ballots
+        return numOfBallots;
+    }
+
     address[] public voters; // Array of address to store address of voters
     // structure that stores voter data
     struct Voter {
@@ -235,10 +241,10 @@ contract Election {
 
     function validBallots(string memory _signedVote, uint256 _choiceCode)
         public
-        onlyOrganizer
+        onlyAdmin
     {
-        require(!usedSignatures[_signedVote], "This signature has been used");
-        require(!end, "Vote is not finished");
+        //require(!usedSignatures[_signedVote], "This signature has been used");
+        //require(!end, "Vote is not finished");
         usedSignatures[_signedVote] = true;
         candidateDetails[_choiceCode].voteCount += 1;
     }

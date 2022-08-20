@@ -5,7 +5,7 @@ import NavbarAdmin from "../../Navbar/NavigationAdmin";
 import NavbarOrganizer from "../../Navbar/NavigationOrganizer";
 import Election from "../../../contracts/election.json";
 import BlindSignature from 'blind-signatures';
-
+//37341274217401084917093058644698059369
 import "./Verification.css";
 
 import { ethers } from "ethers";
@@ -167,13 +167,14 @@ export default class Registration extends Component {
                 <button
                     onClick={() => generateSig(voter.address, voter.blindedVote)}
                     className="vote-bth"
-                    disabled={voter.signedBlindedVote != null}
+                    disabled={voter.signedBlindedVote !== ""}
                 >
                     Generate a signiture
                 </button>
             </div>
           </div>
         ) : null}
+        
         <div
           className="container-list attention"
           style={{ display: voter.eligible ? "none" : null }}

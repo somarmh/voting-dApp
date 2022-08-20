@@ -1,6 +1,5 @@
 // Node modules
 import React, { Component } from "react";
-import {useState} from 'react';
 import { Link } from "react-router-dom";
 //import crypto = require('crypto');
 import crypto from 'crypto-browserify'
@@ -125,7 +124,7 @@ export default class Voting extends Component {
                     signedBlindedVote: voter.signedBlindedVote,
                 },
             });
-            console.log(this.state.currentVoter.blindedVote);
+            console.log(this.state.currentVoter.signedBlindedVote);
             this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
     
         }      
@@ -140,7 +139,7 @@ export default class Voting extends Component {
 
   renderCandidates = (candidate) => {
 
-    const requestSig = async (id) => {
+    const castBallot = async (id) => {
 
       
       console.log('voter1     ' + this.state.randomString);
@@ -153,16 +152,14 @@ export default class Voting extends Component {
 
       console.log('encrypted >>>>>>', encrypted);
       console.log('decrypted >>>>>>', decrypted);
-      await this.state.ElectionInstance1.requestBlindSig(encrypted);
-      window.location.reload();
+      console.log(this.state.currentVoter.signedBlindedVote);
+
+
+      await this.state.ElectionInstance1.vote(id, this.state.randomString, this.state.currentVoter.signedBlindedVote);
+      //window.location.reload();
     };
-    const confirmVote = (id, header) => {
-      var r = window.confirm(
-        "Vote for " + header + " with Id " + id + ".\nAre you sure?"
-      );
-      if (r === true) {
-        requestSig(id);
-      }
+    const Vote = (id) => {
+        castBallot(id);
     };
     return (
       <div className="container-item">
@@ -174,10 +171,10 @@ export default class Voting extends Component {
         </div>
         <div className="vote-btn-container">
           <button
-            onClick={() => confirmVote(candidate.id, candidate.header)}
+            onClick={() => Vote(candidate.id)}
             className="vote-bth"
             disabled={
-              this.state.currentVoter.signedBlindedVote != null 
+              this.state.currentVoter.signedBlindedVote === "" 
             }
           >
             Cast
@@ -186,16 +183,18 @@ export default class Voting extends Component {
       </div>
     );
   };
-  handleChange = e => {
-        console.log(e);
-        
-        this.setState({
-             currentVoter: {
-                signedBlindedVote: e,
-             },
-            });
-        this.props.onChange(e);
-    };
+  handleChange = (event) => {
+    this.setState({
+      currentVoter : {
+        signedBlindedVote : event.target.value
+      }
+    });
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+  }
+
   render() {
 
     if (!this.state.provider) {
@@ -274,14 +273,16 @@ export default class Voting extends Component {
                 ) : (
                   <>
                     {this.state.candidates.map(this.renderCandidates)}
-                    <label className="label-home">
-                        Signiture{" "}
-                        <input
-                            className="input-home"
-                            type="text"
-                            onChange={this.handleChange}
-                        />
-                    </label>
+                    
+                      <label className="label-home">
+                          Signiture{" "}
+                          <input
+                              className="input-home"
+                              type="text"
+                              onChange={this.handleChange}
+                          />
+                      </label>
+                      
                   </>
                 )}
               </div>

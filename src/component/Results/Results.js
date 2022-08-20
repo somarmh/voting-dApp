@@ -7,6 +7,8 @@ import Navbar from "../Navbar/Navigation";
 import NavbarAdmin from "../Navbar/NavigationAdmin";
 import NotInit from "../NotInit";
 
+
+
 // CSS
 import "./Results.css";
 
@@ -16,20 +18,21 @@ import { ethers } from "ethers";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
-
-
 export default class Result extends Component {
   constructor(props) {
     super(props);
     this.state = {
       ElectionInstance: undefined,
+      ElectionInstance1: undefined,
       account: null,
-      provider: null,
+      web3: null,
       isAdmin: false,
       candidateCount: undefined,
+      ballotCount: undefined,
       candidates: [],
       elStarted: false,
       elEnded: false,
+      Ballots: [],
     };
   }
   componentDidMount = async () => {
@@ -39,57 +42,58 @@ export default class Result extends Component {
       window.location.reload();
     }
     try {
-      if (typeof window.ethereum !== "undefined") {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-            electionAddress,
-            Election.abi,
-            provider
-        );
-        
-        const contract1 = new ethers.Contract(
-            electionAddress,
-            Election.abi,
-            signer
-        );
-
-        this.setState({
-            provider: provider,
-            ElectionInstance: contract,
-            ElectionInstance1: contract1,
-            account: accounts[0],
-        });
-        const admin = await this.state.ElectionInstance.getAdmin();
+        if (typeof window.ethereum !== "undefined") {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const accounts = await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const contract = new ethers.Contract(
+                electionAddress,
+                Election.abi,
+                provider
+            );
+            
+            const contract1 = new ethers.Contract(
+                electionAddress,
+                Election.abi,
+                signer
+            );
     
-        if(this.state.account === admin.toLowerCase()) {
-            this.setState({ isAdmin: true });
-        }
-
-        const start = await this.state.ElectionInstance.getStart();
-        this.setState({ elStarted: start });
-        const end = await this.state.ElectionInstance.getEnd();
-        this.setState({ elEnded: end }); 
-        
-        // Total number of candidates
-        const candidateCount = await this.state.ElectionInstance.getTotalCandidate();
-        this.setState({ candidateCount: candidateCount.toNumber() });
-
-       // Loading Candidates details
-       for (let i = 0; i < this.state.candidateCount; i++) {
-            const candidate = await this.state.ElectionInstance.candidateDetails(i);
-            this.state.candidates.push({
-                id: candidate.candidateId.toNumber(),
-                header: candidate.name,
-                slogan: candidate.slogan,
+            this.setState({
+                provider: provider,
+                ElectionInstance: contract,
+                ElectionInstance1: contract1,
+                account: accounts[0],
             });
-        }
 
-        this.setState({ candidates: this.state.candidates });
-        // Loading current voters
-       
-    }      
+            // Get total number of candidates
+            const candidateCount = await this.state.ElectionInstance.getTotalCandidate();
+            this.setState({ candidateCount: candidateCount.toNumber() });
+
+             // Get start and end values
+            const start = await this.state.ElectionInstance.getStart();
+            this.setState({ elStarted: start });
+            const end = await this.state.ElectionInstance.getEnd();
+            this.setState({ elEnded: end });
+
+            // Loadin Candidates detials
+            for (let i = 0; i < this.state.candidateCount; i++) {
+                const candidate = await this.state.ElectionInstance.candidateDetails(i);
+                this.state.candidates.push({
+                    id: candidate.candidateId.toNumber(),
+                    header: candidate.header,
+                    slogan: candidate.slogan,
+                    voteCount: candidate.voteCount.toNumber(),
+                });
+            }
+            console.log("Sddddd");
+            this.setState({ candidates: this.state.candidates });
+            console.log("Sd");
+            // Admin account and verification
+            const admin = await this.state.ElectionInstance.getAdmin();
+            if (this.state.account === admin) {
+                this.setState({ isAdmin: true });
+            }     
+        }
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -99,7 +103,7 @@ export default class Result extends Component {
     }
   };
 
-  render() { 
+  render() {
     if (!this.state.provider) {
       return (
         <>

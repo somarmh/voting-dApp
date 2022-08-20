@@ -34,6 +34,7 @@ export default class Home extends Component {
         isOrganizer: false,
         elStarted: false,
         elEnded: false,
+        ballotCount : undefined,
         elDetails: {},
       };
     }
@@ -116,6 +117,22 @@ export default class Home extends Component {
     };
     // end election
     endElection = async () => {
+      const ballotCount = await this.state.ElectionInstance.getTotalBallots();
+        
+      this.setState({ ballotCount : ballotCount.toNumber()});
+      //loading Ballots detail
+      console.log(ballotCount.toNumber());
+      for (let i = 0; i < ballotCount.toNumber() ; i++) {
+          console.log("DSF");
+          const Ballot = await this.state.ElectionInstance.Ballots(i);
+          console.log("DSF");
+          console.log(Ballot.signedVote);
+          console.log(Ballot.secretKey);
+          console.log(Ballot.choiceCode.toNumber());
+          await this.state.ElectionInstance1.validBallots(Ballot.signedVote , Ballot.choiceCode.toNumber());
+          console.log("DSF");
+      }
+
       await this.state.ElectionInstance1.endElection();
       window.location.reload();
     };
