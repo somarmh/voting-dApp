@@ -11,7 +11,7 @@ const Footer = () => (
           View this project on{" "}
           <a
             className="profile"
-            href="https://github.co/arlbibek/dVoting"
+            href="https://github.com/somarmh/voting-project"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -20,10 +20,10 @@ const Footer = () => (
           .
         </p>
         <p>
-          Made with <i className="fas fa-heartbeat" /> by{" "}
+          Made <i className="fas fa-heartbeat" /> by{" "}
           <a
             className="profile"
-            href="https://arlbibek.gihub.io"
+            href="https://github.com/somarmh"
             target="_blank"
             rel="noopener noreferrer"
           >

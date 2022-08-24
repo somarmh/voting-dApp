@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 contract Election {
     address public admin;
     OrganizerDetails public organizer;
+    InspecotrDetails public inspector;
     uint256 public candidateCount;
     uint256 voterCount;
     uint256 numOfBallots;
@@ -37,8 +38,21 @@ contract Election {
         _;
     }
 
+    modifier onlyInspector() {
+        require(
+            msg.sender == inspector.inspectorAddress,
+            "Caller is not organizer"
+        );
+        _;
+    }
+
     struct OrganizerDetails {
         address organizerAddress;
+        string signiturePublicKey;
+    }
+
+    struct InspecotrDetails {
+        address inspectorAddress;
         string signiturePublicKey;
     }
 
@@ -80,7 +94,8 @@ contract Election {
         string memory _adminTitle,
         string memory _electionTitle,
         string memory _organizationTitle,
-        address _organizerAddress
+        address _organizerAddress,
+        address _inspectorAddress
     ) public onlyAdmin {
         electionDetails = ElectionDetails(
             _adminName,
@@ -90,6 +105,7 @@ contract Election {
             _organizationTitle
         );
         organizer.organizerAddress = _organizerAddress;
+        inspector.inspectorAddress = _inspectorAddress;
         start = true;
         end = false;
     }
@@ -126,16 +142,28 @@ contract Election {
         return candidateCount;
     }
 
-    function setSigniturePublicKey(string memory _publicKey)
+    function setOrganizerSigniturePublicKey(string memory _publicKey)
         public
         onlyOrganizer
     {
         organizer.signiturePublicKey = _publicKey;
     }
 
+    function setInspectorSigniturePublicKey(string memory _publicKey)
+        public
+        onlyInspector
+    {
+        inspector.signiturePublicKey = _publicKey;
+    }
+
     // Get Organizer details
     function getOrganizerAddress() public view returns (address) {
         return organizer.organizerAddress;
+    }
+
+    // Get Inspector details
+    function getInspectorAddress() public view returns (address) {
+        return inspector.inspectorAddress;
     }
 
     function getOrganizerSigniturePublicKey()
@@ -144,6 +172,14 @@ contract Election {
         returns (string memory)
     {
         return organizer.signiturePublicKey;
+    }
+
+    function getInspectorSigniturePublicKey()
+        public
+        view
+        returns (string memory)
+    {
+        return inspector.signiturePublicKey;
     }
 
     // Get voters count
@@ -164,30 +200,26 @@ contract Election {
         address voterAddress;
         string name;
         string phone;
-        string votingPassword;
         bool eligible;
         bool hasVoted;
         bool isRegistered;
         string blindedVote;
-        string signedBlindedVote;
+        string organizersig;
+        string inspectorsig;
     }
 
     // Request to be added as voter
-    function registerAsVoter(
-        string memory _name,
-        string memory _phone,
-        string memory _votingPassword
-    ) public {
+    function registerAsVoter(string memory _name, string memory _phone) public {
         Voter memory newVoter = Voter({
             voterAddress: msg.sender,
             name: _name,
             phone: _phone,
-            votingPassword: _votingPassword,
             eligible: false,
             hasVoted: false,
             isRegistered: true,
             blindedVote: "",
-            signedBlindedVote: ""
+            organizersig: "",
+            inspectorsig: ""
         });
         Voters[msg.sender] = newVoter;
         voters.push(msg.sender);
@@ -211,41 +243,51 @@ contract Election {
     }
 
     // requested blindSig is recorded on the blockchain for auditing purposes
-    function writeBlindSig(address _voter, string memory blindSig)
+    function writeOrganizerSig(address _voter, string memory blindSig)
         public
         onlyOrganizer
     {
-        Voters[_voter].signedBlindedVote = blindSig;
+        Voters[_voter].organizersig = blindSig;
+    }
+
+    function writeInspectorSig(address _voter, string memory blindSig)
+        public
+        onlyInspector
+    {
+        Voters[_voter].inspectorsig = blindSig;
     }
 
     struct Ballot {
         uint256 choiceCode;
         string secretKey;
-        string signedVote;
+        string organizersig;
+        string inspectorsig;
     }
 
     // if the blind signature hasn't been used yet and is correct, the vote is valid
     function vote(
         uint256 _choiceCode,
         string memory _secretKey,
-        string memory _signedVote
+        string memory _organizersig,
+        string memory _inspectorsig
     ) public {
         Ballot memory newBallot = Ballot({
             choiceCode: _choiceCode,
             secretKey: _secretKey,
-            signedVote: _signedVote
+            organizersig: _organizersig,
+            inspectorsig: _inspectorsig
         });
         Ballots[numOfBallots] = newBallot;
         numOfBallots++;
     }
 
-    function validBallots(string memory _signedVote, uint256 _choiceCode)
+    function validBallots(string memory _blindVote, uint256 _choiceCode)
         public
         onlyAdmin
     {
         //require(!usedSignatures[_signedVote], "This signature has been used");
         //require(!end, "Vote is not finished");
-        usedSignatures[_signedVote] = true;
+        usedSignatures[_blindVote] = true;
         candidateDetails[_choiceCode].voteCount += 1;
     }
 

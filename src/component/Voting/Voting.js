@@ -38,18 +38,18 @@ export default class Voting extends Component {
         address: undefined,
         name: null,
         phone: null,
-        votingPassword: null,
         eligible: null,
         hasVoted: false,
         isRegistered: false,
         blindedVote: "",
-        signedBlindedVote: "",
-        hasUsedSig: false
+        organizersig: "",
+        inspectorsig: "",
+        //hasUsedSig: false
       },
     };
   }
   componentDidMount = async () => {
-    console.log('voter1     ' + this.setState.randomString);
+    console.log('voter1     ' + this.state.randomString);
     // refreshing once
     if (!window.location.hash) {
       window.location = window.location + "#loaded";
@@ -103,7 +103,7 @@ export default class Voting extends Component {
                 const candidate = await this.state.ElectionInstance.candidateDetails(i);
                 this.state.candidates.push({
                     id: candidate.candidateId.toNumber(),
-                    header: candidate.name,
+                    name: candidate.name,
                     slogan: candidate.slogan,
                 });
             }
@@ -111,22 +111,22 @@ export default class Voting extends Component {
             this.setState({ candidates: this.state.candidates });
             // Loading current voters
             const voter = await this.state.ElectionInstance.Voters(this.state.account);
+            console.log(voter.inspectorsig);
             this.setState({
                 currentVoter: {
                     address: voter.voterAddress,
                     name: voter.name,
                     phone: voter.phone,
                     isRegistered: voter.isRegistered,
-                    votingPassword: voter.votingPassword,
                     eligible: voter.eligible,
                     hasVoted: voter.hasVoted,
                     blindedVote: voter.blindedVote,
-                    signedBlindedVote: voter.signedBlindedVote,
+                    organizersig: voter.organizersig,
+                    inspectorsig: voter.inspectorsig
                 },
             });
-            console.log(this.state.currentVoter.blindedVote);
-            this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
-    
+            
+            //this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
         }      
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -139,10 +139,13 @@ export default class Voting extends Component {
 
   renderCandidates = (candidate) => {
     const requestSig = async (id) => {
-
-      
-      
-      
+      /*
+      this.setState({
+        currentVoter: {
+          hasVoted: true,
+        },
+      });
+      */
       console.log('voter1     ' + this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
       //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
@@ -236,7 +239,7 @@ export default class Voting extends Component {
                   )
                 ) : (
                   <div className="container-item attention">
-                    <center>Please wait for organizer to give you a signiture.</center>
+                    <center>Please wait organizer for the validation.</center>
                   </div>
                 )
               ) : (

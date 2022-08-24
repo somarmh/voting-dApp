@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import Navbar from "./Navbar/Navigation";
 import NavbarAdmin from "./Navbar/NavigationAdmin";
 import NavbarOrganizer from "./Navbar/NavigationOrganizer";
+import NavbarInspector from "./Navbar/NavigationInspector";
 import UserHome from "./UserHome";
 import StartEnd from "./StartEnd";
 import ElectionStatus from "./ElectionStatus";
@@ -20,7 +21,8 @@ import Election from "../contracts/election.json";
 import { ethers } from "ethers";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-
+const crypto = require('@trust/webcrypto');
+const  jwkToPem = require('jwk-to-pem'),jwt = require('jsonwebtoken');
 export default class Home extends Component {
     
     constructor(props) {
@@ -32,6 +34,7 @@ export default class Home extends Component {
         provider: null,
         isAdmin: false,
         isOrganizer: false,
+        isInspector: false,
         elStarted: false,
         elEnded: false,
         ballotCount : undefined,
@@ -47,7 +50,7 @@ export default class Home extends Component {
       }
       try{
         if (typeof window.ethereum !== "undefined") {
-            
+
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             
@@ -81,10 +84,16 @@ export default class Home extends Component {
             //console.log(orgnaizer);
             // Get election start and end values
             if(this.state.account === orgnaizer.toLowerCase()) {
-                //console.log("SDF");
                 this.setState({ isOrganizer: true });
             }
             
+            const inspector = await this.state.ElectionInstance.getInspectorAddress();
+
+            // Get election start and end values
+            if(this.state.account === inspector.toLowerCase()) {
+                this.setState({ isInspector: true });
+            }
+
             const start = await this.state.ElectionInstance.getStart();
             this.setState({ elStarted: start });
             const end = await this.state.ElectionInstance.getEnd();
@@ -106,6 +115,38 @@ export default class Home extends Component {
                     organizationTitle: organizationTitle,
                 }
             });
+
+            window.crypto.subtle.generateKey(
+                {
+                    name: "RSASSA-PKCS1-v1_5",
+                    modulusLength: 2048, //can be 1024, 2048, or 4096
+                    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+                    hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+                },
+                false, //whether the key is extractable (i.e. can be used in exportKey)
+                ["sign", "verify"] //can be any combination of "sign" and "verify"
+            )
+            .then(function(key){
+                //returns a keypair object
+                console.log(key);
+                console.log(key.publicKey);
+                console.log(key.privateKey);
+                window.crypto.subtle.exportKey(
+                    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+                    key.publicKey //can be a publicKey or privateKey, as long as extractable was true
+                )
+                .then(function(keydata){
+                    //returns the exported key data
+                    console.log(JSON.stringify(keydata));
+                })
+                .catch(function(err){
+                    console.error(err);
+                });
+            })
+            .catch(function(err){
+                console.error(err);
+            });
+            
         }
         }catch (error) {
             // Catch any errors for any of the above operations.
@@ -126,10 +167,11 @@ export default class Home extends Component {
           console.log("DSF");
           const Ballot = await this.state.ElectionInstance.Ballots(i);
           console.log("DSF");
-          console.log(Ballot.signedVote);
+          console.log(Ballot.organizersig); 
+          console.log(Ballot.inspectorsig);
           console.log(Ballot.secretKey);
           console.log(Ballot.choiceCode.toNumber());
-          await this.state.ElectionInstance1.validBallots(Ballot.signedVote , Ballot.choiceCode.toNumber());
+          await this.state.ElectionInstance1.validBallots(Ballot.organizersig , Ballot.choiceCode.toNumber());
           console.log("DSF");
       }
 
@@ -145,7 +187,8 @@ export default class Home extends Component {
           data.adminTitle.toLowerCase(),
           data.electionTitle.toLowerCase(),
           data.organizationTitle.toLowerCase(),
-          data.organizerAddress
+          data.organizerAddress,
+          data.inspectorAddress
         )
         window.location.reload();
     };
@@ -160,7 +203,7 @@ export default class Home extends Component {
         }
         return (
           <>
-            {this.state.isAdmin ? <NavbarAdmin /> : this.state.isOrganizer ? <NavbarOrganizer /> :<Navbar />}
+            {this.state.isAdmin ? <NavbarAdmin /> : this.state.isOrganizer ?  <NavbarOrganizer /> :this.state.isInspector ? <NavbarInspector /> :<Navbar />}
             <div className="container-main">
               <div className="container-item center-items info">
                 Your Account: {this.state.account}
@@ -323,6 +366,18 @@ export default class Home extends Component {
                               type="text"
                               placeholder="eg. 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
                               {...register("organizerAddress", {
+                                required: true,
+                              })}
+                            />
+                          </label>
+                          <label className="label-home">
+                            Inspector Address{" "}
+                            {errors.inspectorAddress && <EMsg msg="*required" />}
+                            <input
+                              className="input-home"
+                              type="text"
+                              placeholder="eg. 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+                              {...register("inspectorAddress", {
                                 required: true,
                               })}
                             />

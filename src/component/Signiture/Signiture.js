@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 
-import Navbar from "../../Navbar/Navigation";
-import NavbarAdmin from "../../Navbar/NavigationAdmin";
-import NavbarOrganizer from "../../Navbar/NavigationOrganizer";
-import Election from "../../../contracts/election.json";
+import Navbar from "../Navbar/Navigation";
+import NavbarAdmin from "../Navbar/NavigationAdmin";
+import NavbarOrganizer from "../Navbar/NavigationOrganizer";
+import Election from "../../contracts/election.json";
 import BlindSignature from 'blind-signatures';
+import NavbarInspector from "../Navbar/NavigationInspector";
 //37341274217401084917093058644698059369
-import "./Verification.css";
+import "./Signiture.css";
 
 import { ethers } from "ethers";
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -77,6 +78,11 @@ export default class Registration extends Component {
                 this.setState({ isOrganizer: true });
             }
            
+            const inspector = await this.state.ElectionInstance.getInspectorAddress();
+            console.log(inspector.toLowerCase());
+            if(this.state.account === inspector.toLowerCase()) {
+                this.setState({ isInspector: true });
+            }
 
             // Total number of voters
             const voterCount = await this.state.ElectionInstance.getTotalVoter()
@@ -137,9 +143,8 @@ export default class Registration extends Component {
             blinded: blindedVote,
             key: key,
         }); // signs blinded message
-        console.log(voter.signedBlindedVote);
         console.log(blindSig.toString());
-        await this.state.ElectionInstance1.writeOrganizerSig(address, blindSig.toString());
+        await this.state.ElectionInstance1.writeInspectorSig(address, blindSig.toString());
         //this.state.voters[index].signedBlindedVote = blindSig;
         window.location.reload();
     };
@@ -154,20 +159,20 @@ export default class Registration extends Component {
                 <th>Name</th>
                 <th>Phone</th>
                 <th>blindedVote</th>
-                <th>Organizer Signiture</th>
+                <th>Inspector Signature</th>
               </tr>
               <tr>
                 <td>{voter.name}</td>
                 <td>{voter.phone}</td>
                 <td>{voter.blindedVote}</td>
-                <td>{voter.organizersig}</td>
+                <td>{voter.inspectorsig}</td>
               </tr>
             </table>
             <div className="vote-btn-container">
                 <button
                     onClick={() => generateSig(voter.address, voter.blindedVote)}
                     className="vote-bth"
-                    disabled={voter.blindedVote === "" || voter.organizersig !== ""}
+                    disabled={voter.blindedVote === "" || voter.inspectorsig !== ""}
                 >
                     Generate a signature
                 </button>
@@ -175,46 +180,10 @@ export default class Registration extends Component {
           </div>
         ) : null}
         
-        <div
-          className="container-list attention"
-          style={{ display: voter.eligible ? "none" : null }}
-        >
-          <table>
-            <tr>
-              <th>Account address</th>
-              <td>{voter.address}</td>
-            </tr>
-            <tr>
-              <th>Name</th>
-              <td>{voter.name}</td>
-            </tr>
-            <tr>
-              <th>Phone</th>
-              <td>{voter.phone}</td>
-            </tr>
-            <tr>
-              <th>Verified</th>
-              <td>{voter.eligible ? "True" : "False"}</td>
-            </tr>
-            <tr>
-              <th>Registered</th>
-              <td>{voter.isRegistered ? "True" : "False"}</td>
-            </tr>
-            <tr>
-              <th>has voted</th>
-              <td>{voter.hasVoted ? "True" : "False"}</td>
-            </tr>
-          </table>
-          <div style={{}}>
-            <button
-              className="btn-verification approve"
-              disabled={voter.eligible}
-              onClick={() => verifyVoter(true, voter.address)}
-            >
-              Approve
-            </button>
-          </div>
-        </div>
+      
+          
+
+
       </>
     );
   };
@@ -237,7 +206,7 @@ export default class Registration extends Component {
     }*/
     return (
       <>
-        <NavbarOrganizer />
+        <NavbarInspector />
         <div className="container-main">
           <h3>Verification</h3>
           <small>Total Voters: {this.state.voters.length}</small>

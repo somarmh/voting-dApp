@@ -38,13 +38,12 @@ export default class Voting extends Component {
         address: undefined,
         name: null,
         phone: null,
-        votingPassword: null,
         eligible: null,
         hasVoted: false,
         isRegistered: false,
         blindedVote: "",
-        signedBlindedVote: "",
-        hasUsedSig: false
+        organizersig: "",
+        inspectorsig: "",
       },
     };
   }
@@ -117,15 +116,15 @@ export default class Voting extends Component {
                     name: voter.name,
                     phone: voter.phone,
                     isRegistered: voter.isRegistered,
-                    votingPassword: voter.votingPassword,
                     eligible: voter.eligible,
                     hasVoted: voter.hasVoted,
                     blindedVote: voter.blindedVote,
-                    signedBlindedVote: voter.signedBlindedVote,
+                    organizersig: voter.organizersig,
+                    inspectorsig: voter.inspectorsig
                 },
             });
-            console.log(this.state.currentVoter.signedBlindedVote);
-            this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
+            //console.log(this.state.currentVoter.signedBlindedVote);
+            //this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
     
         }      
     } catch (error) {
@@ -140,10 +139,14 @@ export default class Voting extends Component {
   renderCandidates = (candidate) => {
 
     const castBallot = async (id) => {
-
-      
+      console.log(this.state.currentVoter.organizersig);
       console.log('voter1     ' + this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
+      this.setState({
+        currentVoter : {
+          organizersig : "asd"
+        }
+      });
       //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
       // Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
 
@@ -152,13 +155,14 @@ export default class Voting extends Component {
 
       console.log('encrypted >>>>>>', encrypted);
       console.log('decrypted >>>>>>', decrypted);
-      console.log(this.state.currentVoter.signedBlindedVote);
+      console.log(this.state.currentVoter.organizersig);
 
 
-      await this.state.ElectionInstance1.vote(id, this.state.randomString, this.state.currentVoter.signedBlindedVote);
+      await this.state.ElectionInstance1.vote(id, this.state.randomString, "dsd" ,this.state.currentVoter.inspectorsig);
       //window.location.reload();
     };
     const Vote = (id) => {
+      console.log(this.state.currentVoter.organizersig);
         castBallot(id);
     };
     return (
@@ -174,7 +178,7 @@ export default class Voting extends Component {
             onClick={() => Vote(candidate.id)}
             className="vote-bth"
             disabled={
-              this.state.currentVoter.signedBlindedVote === "" 
+              this.state.currentVoter.organizersig === "" || this.state.currentVoter.inspectorsig === ""
             }
           >
             Cast
@@ -186,9 +190,19 @@ export default class Voting extends Component {
   handleChange = (event) => {
     this.setState({
       currentVoter : {
-        signedBlindedVote : event.target.value
+        organizersig : event.target.value
       }
     });
+    console.log(this.state.currentVoter.organizersig);
+  }
+
+  handleChange1 = (event) => {
+    this.setState({
+      currentVoter : {
+        inspectorsig : event.target.value
+      }
+    });
+    console.log(this.state.currentVoter.organizersig);
   }
 
   handleSubmit(event) {
@@ -275,7 +289,7 @@ export default class Voting extends Component {
                     {this.state.candidates.map(this.renderCandidates)}
                     
                       <label className="label-home">
-                          Signiture{" "}
+                          Organizer Signature{" "}
                           <input
                               className="input-home"
                               type="text"
@@ -283,6 +297,14 @@ export default class Voting extends Component {
                           />
                       </label>
                       
+                      <label className="label-home">
+                          Inspector Signature{" "}
+                          <input
+                              className="input-home"
+                              type="text"
+                              onChange={this.handleChange1}
+                          />
+                      </label>
                   </>
                 )}
               </div>

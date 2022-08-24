@@ -80,17 +80,16 @@ export default class Result extends Component {
                 const candidate = await this.state.ElectionInstance.candidateDetails(i);
                 this.state.candidates.push({
                     id: candidate.candidateId.toNumber(),
-                    header: candidate.header,
+                    name: candidate.name,
                     slogan: candidate.slogan,
                     voteCount: candidate.voteCount.toNumber(),
                 });
             }
-            console.log("Sddddd");
+            
             this.setState({ candidates: this.state.candidates });
-            console.log("Sd");
             // Admin account and verification
             const admin = await this.state.ElectionInstance.getAdmin();
-            if (this.state.account === admin) {
+            if (this.state.account === admin.toLowerCase()) {
                 this.setState({ isAdmin: true });
             }     
         }
@@ -183,7 +182,7 @@ export function displayResults(candidates) {
     return (
       <tr>
         <td>{candidate.id}</td>
-        <td>{candidate.header}</td>
+        <td>{candidate.name}</td>
         <td>{candidate.voteCount}</td>
       </tr>
     );

@@ -9,7 +9,7 @@ export default function NavbarOrganizer() {
     <nav>
       <div className="header">
         <NavLink to="/">
-          <i className="fab fa-hive" /> Organizer
+          <i className="fab fa-hive" /> Inspector
         </NavLink>
       </div>
       <ul
@@ -18,8 +18,8 @@ export default function NavbarOrganizer() {
       >
        
        <li>
-          <NavLink to="/Verification" activeClassName="nav-active">
-            Verification
+          <NavLink to="/Signiture" activeClassName="nav-active">
+            Signiture
           </NavLink>
         </li>
 

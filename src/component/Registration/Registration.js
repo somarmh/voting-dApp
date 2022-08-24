@@ -35,12 +35,12 @@ export default class Registration extends Component {
         address: undefined,
         name: null,
         phone: null,
-        votingPassword: null,
         eligible: false,
-        //hasVoted: false,
+        hasVoted: false,
         isRegistered: false,
         blindedVote: "",
-        signedBlindedVote: "",
+        organizersig: "",
+        inspectorsig: "",
       },
     };
   }
@@ -97,7 +97,7 @@ export default class Registration extends Component {
                     address: voter.voterAddress,
                     name: voter.name,
                     phone: voter.phone,
-                    //hasVoted: voter.hasVoted,
+                    hasVoted: voter.hasVoted,
                     isRegistered: voter.isRegistered,
                     votingPassword: voter.votingPassword,
                     eligible: voter.eligible,
@@ -113,13 +113,13 @@ export default class Registration extends Component {
                     address: voter.voterAddress,
                     name: voter.name,
                     phone: voter.phone,
-                    //hasVoted: voter.hasVoted,
+                    hasVoted: voter.hasVoted,
                     isVerified: voter.isVerified,
                     isRegistered: voter.isRegistered,
-                    votingPassword: voter.votingPassword,
                     eligible: voter.eligible,
                     blindedVote: voter.blindedVote,
-                    signedBlindedVote: voter.signedBlindedVote,
+                    organizersig: voter.organizersig,
+                    inspectorsig: voter.inspectorsig
                 },
             });
         }      
@@ -137,12 +137,9 @@ export default class Registration extends Component {
   updateVoterPhone = (event) => {
     this.setState({ voterPhone: event.target.value });
   };
-  updateVoterPassword = (event) => {
-    this.setState({ voterPassword: event.target.value });
-  };
   registerAsVoter = async () => {
     console.log("DSf1");
-    await this.state.ElectionInstance1.registerAsVoter(this.state.voterName, this.state.voterPhone , this.state.voterPassword);
+    await this.state.ElectionInstance1.registerAsVoter(this.state.voterName, this.state.voterPhone );
     console.log("DSf2");
     window.location.reload();
   };
@@ -195,24 +192,13 @@ export default class Registration extends Component {
                       />
                     </label>
                   </div>
-                  <div className="div-li">
-                    <label className={"label-r"}>
-                      Voting password <span style={{ color: "tomato" }}></span>
-                      <input
-                        className={"input-r"}
-                        type="text"
-                        placeholder=""
-                        value={this.state.voterPassword}
-                        onChange={this.updateVoterPassword}
-                      />
-                    </label>
-                  </div>
+                  
                   <p className="note">
                     <span style={{ color: "tomato" }}> Note: </span>
                     <br /> Make sure your account address and Phone number are
-                    correct. <br /> Organizer might not approve your account if the
-                    provided Password does not matches the account
-                    address registered in organizer catalogue.
+                    correct. <br /> Organizers and Inspectors might not approve your account if the
+                    provided Phone number does not matches the account
+                    address registered in their catalogue.
                   </p>
                   <button
                     className="btn-add"
@@ -298,8 +284,12 @@ export function loadCurrentVoter(voter, isRegistered) {
             <td>{voter.blindedVote}</td>
           </tr>
           <tr>
-            <th>signedBlindedVote</th>
-            <td>{voter.signedBlindedVote}</td>
+            <th>Organizer Signiture</th>
+            <td>{voter.organizersig}</td>
+          </tr>
+          <tr>
+            <th>Inspector Signiture</th>
+            <td>{voter.inspectorsig}</td>
           </tr>
         </table>
       </div>
