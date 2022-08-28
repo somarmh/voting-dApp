@@ -35,7 +35,8 @@ export default class Registration extends Component {
     }
     try {
         if (typeof window.ethereum !== "undefined") {
-            
+            console.log(localStorage.getItem('OrganizerPrivateKey'));
+            console.log(localStorage.getItem('InspectorPrivateKey'));
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
@@ -79,7 +80,7 @@ export default class Registration extends Component {
            
 
             // Total number of voters
-            const voterCount = await this.state.ElectionInstance.getTotalVoter()
+            const voterCount = await this.state.ElectionInstance.getTotalVoter();
             this.setState({ voterCount: voterCount });
             // Loading all the voters
             //console.log("dszf" + this.state.voterCount.toNumber());
@@ -101,7 +102,7 @@ export default class Registration extends Component {
             }
             //console.log(this.state.voters[0].signedBlindedVote);
             this.setState({ voters: this.state.voters });
-            
+
     }
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -111,17 +112,7 @@ export default class Registration extends Component {
       console.error(error);
     }
   };
-  /*async generateKeyPair(keyTag) {
-    let keys = await RSAKeychain.generate(keyTag);
-    return keys.public;
-  }*/
-  /*iterateonvoters = () => {
-    console.log(this.state.voterCount.toNumber());
-    for (let i = 0; i < this.state.voterCount.toNumber(); i++) {
-        console.log(i);
-        this.renderUnverifiedVoters(this.state.voters[i] , i);
-    }
-  }*/
+
   renderUnverifiedVoters = (voter , index) => {
     console.log(index);
     const verifyVoter = async (verifiedStatus, address) => {
@@ -131,17 +122,74 @@ export default class Registration extends Component {
       window.location.reload();
     };
     const generateSig = async (address, blindedVote) => {
-        console.log("DSFA");
-        const key = BlindSignature.keyGeneration({ b: 128 });
-        const blindSig = BlindSignature.sign({
-            blinded: blindedVote,
-            key: key,
-        }); // signs blinded message
-        console.log(voter.signedBlindedVote);
-        console.log(blindSig.toString());
-        await this.state.ElectionInstance1.writeOrganizerSig(address, blindSig.toString());
-        //this.state.voters[index].signedBlindedVote = blindSig;
-        window.location.reload();
+       
+      /*
+      Convert a string into an ArrayBuffer
+      from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+      */
+      function str2ab(str) {
+        const buf = new ArrayBuffer(str.length);
+        const bufView = new Uint8Array(buf);
+        for (let i = 0, strLen = str.length; i < strLen; i++) {
+          bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+      }
+
+
+      /*
+      Import a PEM encoded RSA private key, to use for RSA-PSS signing.
+      Takes a string containing the PEM encoded key, and returns a Promise
+      that will resolve to a CryptoKey representing the private key.
+      */
+      function importPrivateKey(pem) {
+        console.log(pem);
+        // fetch the part of the PEM string between header and footer
+        const pemHeader = "-----BEGIN PRIVATE KEY-----";
+        const pemFooter = "-----END PRIVATE KEY-----";
+        const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+        // base64 decode the string to get the binary data
+        const binaryDerString = window.atob(pemContents);
+        // convert from a binary string to an ArrayBuffer
+        const binaryDer = str2ab(binaryDerString);
+
+        return window.crypto.subtle.importKey(
+          "pkcs8",
+          binaryDer,
+          {
+            name: "RSA-PSS",
+            // Consider using a 4096-bit key for systems that require long-term security
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+            hash: "SHA-256",
+          },
+          true,
+          ["sign"]
+        );
+      }
+
+
+      console.log(localStorage.getItem('OrganizerPrivateKey'));
+      const pemEncodedKey = localStorage.getItem('OrganizerPrivateKey');
+
+      const signingKey = await importPrivateKey(pemEncodedKey);
+      const enc = new TextEncoder();
+      const encoded = enc.encode(blindedVote);;
+      console.log(signingKey);
+      const signature = await window.crypto.subtle.sign(
+        {
+          name: "RSA-PSS",
+          saltLength: 16,
+        },
+        signingKey,
+        encoded
+      );
+      const encoded1 = enc.encode(signature);
+      
+      const sig = encoded1.toString();
+      console.log(sig);
+      await this.state.ElectionInstance1.writeOrganizerSig(address, sig);
+      window.location.reload();
     };
     return (
       <>

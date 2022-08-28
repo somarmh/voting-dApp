@@ -114,7 +114,7 @@ export default class Registration extends Component {
                     name: voter.name,
                     phone: voter.phone,
                     hasVoted: voter.hasVoted,
-                    isVerified: voter.isVerified,
+                    isVerified: voter.eligible,
                     isRegistered: voter.isRegistered,
                     eligible: voter.eligible,
                     blindedVote: voter.blindedVote,

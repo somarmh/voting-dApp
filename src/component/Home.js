@@ -2,7 +2,7 @@
 import React, { Component } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-
+import { instanceOf } from "prop-types";
 // Components
 import Navbar from "./Navbar/Navigation";
 import NavbarAdmin from "./Navbar/NavigationAdmin";
@@ -12,7 +12,7 @@ import UserHome from "./UserHome";
 import StartEnd from "./StartEnd";
 import ElectionStatus from "./ElectionStatus";
 
-
+import { withCookies, Cookies } from "react-cookie";
 // CSS
 import "./Home.css";
 
@@ -24,9 +24,10 @@ const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const crypto = require('@trust/webcrypto');
 const  jwkToPem = require('jwk-to-pem'),jwt = require('jsonwebtoken');
 export default class Home extends Component {
-    
+
     constructor(props) {
       super(props);
+
       this.state = {
         ElectionInstance: undefined,
         ElectionInstance1: undefined,
@@ -38,18 +39,23 @@ export default class Home extends Component {
         elStarted: false,
         elEnded: false,
         ballotCount : undefined,
+        OrganizerPublicKey : '',
+        InspectorPublicKey : '',
         elDetails: {},
       };
     }
     // refreshing once
     componentDidMount = async () => {
-        
+
       if (!window.location.hash) {
         window.location = window.location + "#loaded";
         window.location.reload();
       }
       try{
         if (typeof window.ethereum !== "undefined") {
+            console.log(localStorage.getItem('OrganizerPrivateKey'));
+            console.log(localStorage.getItem('InspectorPrivateKey'));
+          
 
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
@@ -76,23 +82,155 @@ export default class Home extends Component {
             //console.log(admin.toLowerCase());
             //console.log(this.state.account);
             
+
             if(this.state.account === admin.toLowerCase()) {
                 this.setState({ isAdmin: true });
             }
 
             const orgnaizer = await this.state.ElectionInstance.getOrganizerAddress();
-            //console.log(orgnaizer);
+            
             // Get election start and end values
             if(this.state.account === orgnaizer.toLowerCase()) {
+                console.log("df");
                 this.setState({ isOrganizer: true });
-            }
-            
+
+
+                console.log("dsf");
+                let pk;
+                console.log(localStorage.getItem('OrganizerPublicKey'));
+                console.log(localStorage.getItem('OrganizerPrivateKey'));
+                if( localStorage.getItem('OrganizerPublicKey') === null) {
+                    console.log("dsf");
+                /*
+                Convert an ArrayBuffer into a string
+                from https://developer.chrome.com/blog/how-to-convert-arraybuffer-to-and-from-string/
+                */
+                function ab2str(buf) {
+                  return String.fromCharCode.apply(null, new Uint8Array(buf));
+                }
+
+                /*
+                Export the given key and write it into the "exported-key" space.
+                */
+                async function exportCryptoKey(key) {
+                  const exported = await window.crypto.subtle.exportKey(
+                    "pkcs8",
+                    key
+                  );
+                  const exportedAsString = ab2str(exported);
+                  const exportedAsBase64 = window.btoa(exportedAsString);
+                  const pemExported = `-----BEGIN PRIVATE KEY-----\n${exportedAsBase64}\n-----END PRIVATE KEY-----`;
+                  console.log(pemExported);
+                  localStorage.setItem('OrganizerPrivateKey', pemExported);
+                }
+                async function exportCryptoKey1(key) {
+                  const exported = await window.crypto.subtle.exportKey(
+                    "spki",
+                    key
+                  );
+                  const exportedAsString = ab2str(exported);
+                  const exportedAsBase64 = window.btoa(exportedAsString);
+                  console.log("!!!");
+                  const pemExported = `-----BEGIN PUBLIC KEY-----\n${exportedAsBase64}\n-----END PUBLIC KEY-----`;
+                  console.log(pemExported);
+                  
+                  localStorage.setItem('OrganizerPublicKey', pemExported);
+                }
+                /*
+                Generate a sign/verify key pair,
+                then set up an event listener on the "Export" button.
+                */
+                window.crypto.subtle.generateKey(
+                  {
+                    name: "RSA-PSS",
+                    // Consider using a 4096-bit key for systems that require long-term security
+                    modulusLength: 2048,
+                    publicExponent: new Uint8Array([1, 0, 1]),
+                    hash: "SHA-256",
+                  },
+                  true,
+                  ["sign", "verify"]
+                ).then((keyPair) => {
+                    exportCryptoKey(keyPair.privateKey);
+                    //console.log("!11");
+                    exportCryptoKey1(keyPair.publicKey);
+                });            
+                   
+                 
+            }}
+            const var1 = await this.state.ElectionInstance.getOrganizerSigniturePublicKey();
+            console.log(var1);
+            this.setState({ OrganizerPublicKey: var1 });
             const inspector = await this.state.ElectionInstance.getInspectorAddress();
 
             // Get election start and end values
             if(this.state.account === inspector.toLowerCase()) {
                 this.setState({ isInspector: true });
-            }
+
+                let pk;
+                console.log(localStorage.getItem('InspectorPublicKey'));
+                console.log(localStorage.getItem('InspectorPrivateKey'));
+                if( localStorage.getItem('InspectorPublicKey') === null) {
+                    /*
+                    Convert an ArrayBuffer into a string
+                    from https://developer.chrome.com/blog/how-to-convert-arraybuffer-to-and-from-string/
+                    */
+                    function ab2str(buf) {
+                      return String.fromCharCode.apply(null, new Uint8Array(buf));
+                    }
+
+                    /*
+                    Export the given key and write it into the "exported-key" space.
+                    */
+                    async function exportCryptoKey(key) {
+                      const exported = await window.crypto.subtle.exportKey(
+                        "pkcs8",
+                        key
+                      );
+                      const exportedAsString = ab2str(exported);
+                      const exportedAsBase64 = window.btoa(exportedAsString);
+                      const pemExported = `-----BEGIN PRIVATE KEY-----\n${exportedAsBase64}\n-----END PRIVATE KEY-----`;
+                      console.log(pemExported);
+                      localStorage.setItem('InspectorPrivateKey', pemExported);
+                    }
+                    async function exportCryptoKey1(key) {
+                      const exported = await window.crypto.subtle.exportKey(
+                        "spki",
+                        key
+                      );
+                      const exportedAsString = ab2str(exported);
+                      const exportedAsBase64 = window.btoa(exportedAsString);
+                      console.log("!!!");
+                      const pemExported = `-----BEGIN PUBLIC KEY-----\n${exportedAsBase64}\n-----END PUBLIC KEY-----`;
+                      console.log(pemExported);
+                      
+                      localStorage.setItem('InspectorPublicKey', pemExported);
+                    }
+                    /*
+                    Generate a sign/verify key pair,
+                    then set up an event listener on the "Export" button.
+                    */
+                    window.crypto.subtle.generateKey(
+                      {
+                        name: "RSA-PSS",
+                        // Consider using a 4096-bit key for systems that require long-term security
+                        modulusLength: 2048,
+                        publicExponent: new Uint8Array([1, 0, 1]),
+                        hash: "SHA-256",
+                      },
+                      true,
+                      ["sign", "verify"]
+                    ).then((keyPair) => {
+                        exportCryptoKey(keyPair.privateKey);
+                        //console.log("!11");
+                        exportCryptoKey1(keyPair.publicKey);
+                    });            
+              }}
+              const var2 = await this.state.ElectionInstance.getInspectorSigniturePublicKey();
+              console.log(var2);
+              this.setState({ InspectorPublicKey: var2 });
+
+
 
             const start = await this.state.ElectionInstance.getStart();
             this.setState({ elStarted: start });
@@ -115,38 +253,8 @@ export default class Home extends Component {
                     organizationTitle: organizationTitle,
                 }
             });
-
-            window.crypto.subtle.generateKey(
-                {
-                    name: "RSASSA-PKCS1-v1_5",
-                    modulusLength: 2048, //can be 1024, 2048, or 4096
-                    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-                    hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-                },
-                false, //whether the key is extractable (i.e. can be used in exportKey)
-                ["sign", "verify"] //can be any combination of "sign" and "verify"
-            )
-            .then(function(key){
-                //returns a keypair object
-                console.log(key);
-                console.log(key.publicKey);
-                console.log(key.privateKey);
-                window.crypto.subtle.exportKey(
-                    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-                    key.publicKey //can be a publicKey or privateKey, as long as extractable was true
-                )
-                .then(function(keydata){
-                    //returns the exported key data
-                    console.log(JSON.stringify(keydata));
-                })
-                .catch(function(err){
-                    console.error(err);
-                });
-            })
-            .catch(function(err){
-                console.error(err);
-            });
-            
+            console.log(this.state.OrganizerPublicKey);
+            console.log(this.state.InspectorPublicKey);
         }
         }catch (error) {
             // Catch any errors for any of the above operations.
@@ -193,6 +301,47 @@ export default class Home extends Component {
         window.location.reload();
     };
     render() {
+        const btn = {
+          display: "block",
+          padding: "21px",
+          margin: "7px",
+          minWidth: "max-content",
+          textAlign: "center",
+          width: "333px",
+          alignSelf: "center",
+        };
+        const publishPublicKey = async () => {
+          
+          
+
+
+            console.log("DS");
+            if(this.state.isOrganizer){
+                let publicKey = await this.state.ElectionInstance1.getOrganizerSigniturePublicKey();
+                console.log(publicKey);
+                if(publicKey === ''){
+                  console.log("df11111s");
+                  console.log(localStorage.getItem('OrganizerPublicKey'));
+                  await this.state.ElectionInstance1.setOrganizerSigniturePublicKey(localStorage.getItem('OrganizerPublicKey'));
+                }
+            }
+            else{
+                let publicKey = await this.state.ElectionInstance1.getInspectorSigniturePublicKey();
+                console.log("^^^^^^^");
+                console.log(publicKey);
+                if(publicKey === ''){
+                  console.log("LLLLLL");
+                  console.log(localStorage.getItem('InspectorPublicKey'));
+                  await this.state.ElectionInstance1.setInspectorSigniturePublicKey(localStorage.getItem('InspectorPublicKey'));
+                }
+            }
+            
+            
+
+
+          //window.location.reload();
+        };
+
         if (!this.state.provider) {
           return (
             <>
@@ -245,6 +394,22 @@ export default class Home extends Component {
                 </div>
               </>
             ) : null}
+            {this.state.isOrganizer || this.state.isInspector? (
+              <>
+                <div className="container-item">
+                    <button
+                      type="button"
+                      // onClick={this.endElection}
+                      onClick={publishPublicKey}
+                      style={btn}
+                      disabled = {(this.state.OrganizerPublicKey !== '' && this.state.isOrganizer) ||
+                                  (this.state.InspectorPublicKey !== '' && this.state.isInspector)}
+                    >
+                      Publish the Signature publicKey
+                    </button>
+                </div>
+              </>
+            ):null }
           </>
         );
       }

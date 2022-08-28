@@ -23,6 +23,7 @@
     "jwk-to-pem": "^2.0.5",
     "node-ethers": "^3.0.4",
     "react": "^18.2.0",
+    "react-cookie": "^4.1.1",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.34.2",
     "react-native": "^0.69.4",

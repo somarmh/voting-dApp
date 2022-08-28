@@ -8,13 +8,13 @@ import AesEncryption from 'aes-encryption'
 import Navbar from "../Navbar/Navigation";
 import NavbarAdmin from "../Navbar/NavigationAdmin";
 import NotInit from "../NotInit";
-
 // CSS
 import "./Voting.css";
 
 // Contract
 import Election from "../../contracts/election.json";
 import { ethers } from "ethers";
+import { faIgloo } from "@fortawesome/free-solid-svg-icons";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 //const crypto = require("crypto");
@@ -23,7 +23,8 @@ export default class Voting extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      randomString: crypto.randomBytes(32).toString("hex"),
+      randomString: "",
+      //randomString: crypto.randomBytes(32).toString("hex"),
       aes:  new AesEncryption(),
       ElectionInstance: undefined,
       ElectionInstance1: undefined,
@@ -57,6 +58,13 @@ export default class Voting extends Component {
     }
     try {
         if (typeof window.ethereum !== "undefined") {
+            if(localStorage.getItem('secretKey') == null){
+              localStorage.setItem('secretKey', crypto.randomBytes(32).toString("hex"));
+            }
+            if(this.state.randomString === ''){
+              const var1 = localStorage.getItem('secretKey');
+              this.setState({randomString: var1});
+            }
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
@@ -139,18 +147,13 @@ export default class Voting extends Component {
 
   renderCandidates = (candidate) => {
     const requestSig = async (id) => {
-      /*
-      this.setState({
-        currentVoter: {
-          hasVoted: true,
-        },
-      });
-      */
       console.log('voter1     ' + this.state.randomString);
+      
+      console.log(this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
       //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
       // Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
-
+      //cba0d144607042dd7cefba1deb9d3fd65c3d9f4b3ad7792c364bf61f7f1352f0
       const encrypted = this.state.aes.encrypt(id.toString());
       const decrypted = this.state.aes.decrypt(encrypted);
 
@@ -160,6 +163,7 @@ export default class Voting extends Component {
       window.location.reload();
     };
     const confirmVote = (id, header) => {
+
       var r = window.confirm(
         "Vote for " + header + " with Id " + id + ".\nAre you sure?"
       );
