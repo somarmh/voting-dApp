@@ -1,3 +1,9 @@
+td{
+  word-wrap: break-word;
+  word-break: break-all;
+  table-layout: fixed;
+  max-width: 350px;
+}
 .btn-verification {
     padding: 11px;
     width: 100%;

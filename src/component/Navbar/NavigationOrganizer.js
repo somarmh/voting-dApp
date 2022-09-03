@@ -23,6 +23,11 @@ export default function NavbarOrganizer() {
           </NavLink>
         </li>
 
+        <li>
+          <NavLink to="/Validation" activeClassName="nav-active">
+            Validation
+          </NavLink>
+        </li>
 
         <li>
           <NavLink to="/Results" activeClassName="nav-active">

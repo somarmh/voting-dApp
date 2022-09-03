@@ -16,9 +16,9 @@ export default class AddCandidate extends Component {
     super(props);
     this.state = {
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       provider: null,
       accounts: null,
+      account: null,
       isAdmin: false,
       header: "",
       slogan: "",
@@ -39,13 +39,8 @@ export default class AddCandidate extends Component {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            const contract = new ethers.Contract(
-            electionAddress,
-            Election.abi,
-            provider
-            );
             
-            const contract1 = new ethers.Contract(
+            const contract = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -54,7 +49,6 @@ export default class AddCandidate extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
             
@@ -95,10 +89,9 @@ export default class AddCandidate extends Component {
   };
 
   addCandidate = async () => {
-    const transaction = await this.state.ElectionInstance1.addCandidate(this.state.header, this.state.slogan);await transaction.wait();
-    await transaction.wait();
-    console.log("sdf");
-    window.location.reload();
+    console.log("222222");
+    await this.state.ElectionInstance.addCandidate(this.state.header, this.state.slogan);
+    console.log("111111");
   };
 
   render() {

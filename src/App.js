@@ -10,9 +10,8 @@ import Registration from "./component/Registration/Registration";
 
 import AddCandidate from "./component/Admin/AddCandidate/AddCandidate";
 import Verification from "./component/Admin/Verification/Verification";
-import Signiture from "./component/Signiture/Signiture";
-import test from "./component/test";
-import StartEnd from "./component/Admin/StartEnd/StartEnd";
+import Signature from "./component/Signature/Signature";
+import Validation from "./component/Validation/Validation"
 
 import Footer from "./component/Footer/Footer";
 
@@ -26,13 +25,13 @@ export default class App extends Component {
           <Routes>
             <Route exact path="/" element={ <Home/>} />
             <Route exact path="/AddCandidate" element={<AddCandidate/>} />
-            <Route exact path="/Signiture" element={<Signiture/>} />
+            <Route exact path="/Validation" element={<Validation/>} />
+            <Route exact path="/Signature" element={<Signature/>} />
             <Route exact path="/Voting" element={<Voting/>} />
             <Route exact path="/Casting" element={<Casting/>} />
             <Route exact path="/Results" element={<Results/>} />
             <Route exact path="/Registration" element={<Registration/>} />
             <Route exact path="/Verification" element={<Verification/>} />
-            <Route exact path="/test" element={<test/>} />
             <Route exact path="*" element={<NotFound/>} />
           </Routes>
         </BrowserRouter>

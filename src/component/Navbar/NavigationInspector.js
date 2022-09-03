@@ -6,7 +6,7 @@ import "./Navbar.css";
 export default function NavbarOrganizer() {
   const [open, setOpen] = useState(false);
   return (
-    <nav>
+    <nav style = {{background: "red"}}>
       <div className="header">
         <NavLink to="/">
           <i className="fab fa-hive" /> Inspector
@@ -18,8 +18,8 @@ export default function NavbarOrganizer() {
       >
        
        <li>
-          <NavLink to="/Signiture" activeClassName="nav-active">
-            Signiture
+          <NavLink to="/Signature" activeClassName="nav-active">
+            Signature
           </NavLink>
         </li>
 

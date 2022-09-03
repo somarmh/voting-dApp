@@ -6,7 +6,7 @@ import "./Navbar.css";
 export default function NavbarAdmin() {
   const [open, setOpen] = useState(false);
   return (
-    <nav>
+    <nav style = {{background: "blue"}}>
       <div className="header">
         <NavLink to="/">
           <i className="fab fa-hive" /> Admin

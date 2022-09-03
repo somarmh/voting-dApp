@@ -41,9 +41,9 @@ export default class StartEnd extends Component {
             const accounts = await provider.send("eth_requestAccounts", []);
             //const signer = provider.getSigner();
             const contract = new ethers.Contract(
-            electionAddress,
-            Election.abi,
-            provider
+              electionAddress,
+              Election.abi,
+              provider
             );
 
             this.setState({

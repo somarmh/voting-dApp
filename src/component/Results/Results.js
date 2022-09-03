@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 // Components
 import Navbar from "../Navbar/Navigation";
 import NavbarAdmin from "../Navbar/NavigationAdmin";
+import NavbarOrganizer from "../Navbar/NavigationOrganizer";
+import NavbarInspector from "../Navbar/NavigationInspector";
 import NotInit from "../NotInit";
 
 
@@ -23,7 +25,6 @@ export default class Result extends Component {
     super(props);
     this.state = {
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       account: null,
       web3: null,
       isAdmin: false,
@@ -46,13 +47,8 @@ export default class Result extends Component {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
+
             const contract = new ethers.Contract(
-                electionAddress,
-                Election.abi,
-                provider
-            );
-            
-            const contract1 = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -61,10 +57,27 @@ export default class Result extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
+            // Admin account and verification
+            const admin = await this.state.ElectionInstance.getAdmin();
 
+            if(this.state.account === admin.toLowerCase()) {
+                this.setState({ isAdmin: true });
+            }
+
+            const orgnaizer = await this.state.ElectionInstance.getOrganizerAddress();
+            
+            // Get election start and end values
+            if(this.state.account === orgnaizer.toLowerCase()) {
+                this.setState({ isOrganizer: true });
+            }
+            const inspector = await this.state.ElectionInstance.getInspectorAddress();
+
+            // Get election start and end values
+            if(this.state.account === inspector.toLowerCase()) {
+                this.setState({ isInspector: true });
+            }
             // Get total number of candidates
             const candidateCount = await this.state.ElectionInstance.getTotalCandidate();
             this.setState({ candidateCount: candidateCount.toNumber() });
@@ -87,11 +100,8 @@ export default class Result extends Component {
             }
             
             this.setState({ candidates: this.state.candidates });
-            // Admin account and verification
-            const admin = await this.state.ElectionInstance.getAdmin();
-            if (this.state.account === admin.toLowerCase()) {
-                this.setState({ isAdmin: true });
-            }     
+            
+ 
         }
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -114,7 +124,7 @@ export default class Result extends Component {
 
     return (
       <>
-        {this.state.isAdmin ? <NavbarAdmin /> : <Navbar />}
+        {this.state.isAdmin ? <NavbarAdmin /> : this.state.isOrganizer ?  <NavbarOrganizer /> :this.state.isInspector ? <NavbarInspector /> :<Navbar />}
         <br />
         <div>
           {!this.state.elStarted && !this.state.elEnded ? (

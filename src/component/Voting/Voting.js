@@ -14,20 +14,15 @@ import "./Voting.css";
 // Contract
 import Election from "../../contracts/election.json";
 import { ethers } from "ethers";
-import { faIgloo } from "@fortawesome/free-solid-svg-icons";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-//const crypto = require("crypto");
-//const AesEncryption = require('aes-encryption');
 export default class Voting extends Component {
   constructor(props) {
     super(props);
     this.state = {
       randomString: "",
-      //randomString: crypto.randomBytes(32).toString("hex"),
       aes:  new AesEncryption(),
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       account: null,
       provider: null,
       isAdmin: false,
@@ -37,7 +32,7 @@ export default class Voting extends Component {
       elEnded: false,
       currentVoter: {
         address: undefined,
-        name: null,
+        nationalNumber: null,
         phone: null,
         eligible: null,
         hasVoted: false,
@@ -45,12 +40,10 @@ export default class Voting extends Component {
         blindedVote: "",
         organizersig: "",
         inspectorsig: "",
-        //hasUsedSig: false
       },
     };
   }
   componentDidMount = async () => {
-    console.log('voter1     ' + this.state.randomString);
     // refreshing once
     if (!window.location.hash) {
       window.location = window.location + "#loaded";
@@ -68,13 +61,8 @@ export default class Voting extends Component {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            const contract = new ethers.Contract(
-                electionAddress,
-                Election.abi,
-                provider
-            );
             
-            const contract1 = new ethers.Contract(
+            const contract = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -83,11 +71,10 @@ export default class Voting extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
             const admin = await this.state.ElectionInstance.getAdmin();
-        
+            
             if(this.state.account === admin.toLowerCase()) {
                 this.setState({ isAdmin: true });
             }
@@ -117,13 +104,13 @@ export default class Voting extends Component {
             }
 
             this.setState({ candidates: this.state.candidates });
+
             // Loading current voters
             const voter = await this.state.ElectionInstance.Voters(this.state.account);
-            console.log(voter.inspectorsig);
             this.setState({
                 currentVoter: {
                     address: voter.voterAddress,
-                    name: voter.name,
+                    nationalNumber: voter.nationalNumber,
                     phone: voter.phone,
                     isRegistered: voter.isRegistered,
                     eligible: voter.eligible,
@@ -134,7 +121,6 @@ export default class Voting extends Component {
                 },
             });
             
-            //this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
         }      
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -147,21 +133,14 @@ export default class Voting extends Component {
 
   renderCandidates = (candidate) => {
     const requestSig = async (id) => {
-      console.log('voter1     ' + this.state.randomString);
-      
       console.log(this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
-      //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
-      // Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
-      //cba0d144607042dd7cefba1deb9d3fd65c3d9f4b3ad7792c364bf61f7f1352f0
       const encrypted = this.state.aes.encrypt(id.toString());
       const decrypted = this.state.aes.decrypt(encrypted);
-
-      console.log('encrypted >>>>>>', encrypted);
-      console.log('decrypted >>>>>>', decrypted);
-      await this.state.ElectionInstance1.requestBlindSig(encrypted);
+      await this.state.ElectionInstance.requestBlindSig(encrypted);
       window.location.reload();
     };
+
     const confirmVote = (id, header) => {
 
       var r = window.confirm(
@@ -175,7 +154,7 @@ export default class Voting extends Component {
       <div className="container-item">
         <div className="candidate-info">
           <h2>
-            {candidate.header} <small>#{candidate.id}</small>
+            {candidate.name} <small>#{candidate.id}</small>
           </h2>
           <p className="slogan">{candidate.slogan}</p>
         </div>
@@ -221,17 +200,6 @@ export default class Voting extends Component {
                       <div>
                         <strong>You've casted your vote waiting for the signiture</strong>
                         <p />
-                        <center>
-                          <Link
-                            to="/Results"
-                            style={{
-                              color: "black",
-                              textDecoration: "underline",
-                            }}
-                          >
-                            See Results
-                          </Link>
-                        </center>
                       </div>
                     </div>
                   ) : (

@@ -5,7 +5,7 @@ const ElectionStatus = (props) => {
     padding: "11px",
     margin: "7px",
     width: "100%",
-    border: "1px solid tomato",
+    border: "1px solid blue",
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center",

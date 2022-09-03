@@ -20,7 +20,6 @@ export default class Registration extends Component {
     super(props);
     this.state = {
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       provider: null,
       account: null,
       isAdmin: false,
@@ -29,12 +28,13 @@ export default class Registration extends Component {
       voterCount: undefined,
       voterName: "",
       voterPhone: "",
+      voterNationalNumber: "",
       voterPassword: "",
       voters: [],
       currentVoter: {
         address: undefined,
-        name: null,
         phone: null,
+        nationalNumber: null,
         eligible: false,
         hasVoted: false,
         isRegistered: false,
@@ -56,13 +56,8 @@ export default class Registration extends Component {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            const contract = new ethers.Contract(
-                electionAddress,
-                Election.abi,
-                provider
-            );
             
-            const contract1 = new ethers.Contract(
+            const contract = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -71,7 +66,6 @@ export default class Registration extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
             const admin = await this.state.ElectionInstance.getAdmin();
@@ -95,8 +89,8 @@ export default class Registration extends Component {
                 const voter = await this.state.ElectionInstance.Voters(voterAddress);
                 this.state.voters.push({
                     address: voter.voterAddress,
-                    name: voter.name,
                     phone: voter.phone,
+                    nationalNumber: voter.nationalNumber,
                     hasVoted: voter.hasVoted,
                     isRegistered: voter.isRegistered,
                     votingPassword: voter.votingPassword,
@@ -111,7 +105,7 @@ export default class Registration extends Component {
             this.setState({
                 currentVoter: {
                     address: voter.voterAddress,
-                    name: voter.name,
+                    nationalNumber: voter.nationalNumber,
                     phone: voter.phone,
                     hasVoted: voter.hasVoted,
                     isVerified: voter.eligible,
@@ -131,16 +125,14 @@ export default class Registration extends Component {
       );
     }
   };
-  updateVoterName = (event) => {
-    this.setState({ voterName: event.target.value });
-  };
   updateVoterPhone = (event) => {
     this.setState({ voterPhone: event.target.value });
   };
+  updateNationalNumber = (event) => {
+    this.setState({ voterNationalNumber: event.target.value });
+  };
   registerAsVoter = async () => {
-    console.log("DSf1");
-    await this.state.ElectionInstance1.registerAsVoter(this.state.voterName, this.state.voterPhone );
-    console.log("DSf2");
+    await this.state.ElectionInstance.registerAsVoter(this.state.voterNationalNumber, this.state.voterPhone );
     window.location.reload();
   };
   render() {
@@ -170,13 +162,13 @@ export default class Registration extends Component {
                   
                   <div className="div-li">
                     <label className={"label-r"}>
-                      Name
+                      National number
                       <input
                         className={"input-r"}
                         type="text"
-                        placeholder="eg. Somar"
-                        value={this.state.voterName}
-                        onChange={this.updateVoterName}
+                        placeholder="eg. 051900032514"
+                        value={this.state.voterNationalNumber}
+                        onChange={this.updateNationalNumber}
                       />{" "}
                     </label>
                   </div>
@@ -192,13 +184,12 @@ export default class Registration extends Component {
                       />
                     </label>
                   </div>
-                  
                   <p className="note">
                     <span style={{ color: "tomato" }}> Note: </span>
-                    <br /> Make sure your account address and Phone number are
+                    <br /> Make sure your phone number and your national number are
                     correct. <br /> Organizers and Inspectors might not approve your account if the
-                    provided Phone number does not matches the account
-                    address registered in their catalogue.
+                    provided Phone number does not matches the national number
+                    registered in their catalogue.
                   </p>
                   <button
                     className="btn-add"
@@ -260,8 +251,8 @@ export function loadCurrentVoter(voter, isRegistered) {
             <td>{voter.address}</td>
           </tr>
           <tr>
-            <th>Name</th>
-            <td>{voter.name}</td>
+            <th>National Number</th>
+            <td>{voter.nationalNumber}</td>
           </tr>
           <tr>
             <th>Phone</th>
@@ -307,8 +298,8 @@ export function loadAllVoters(voters) {
               <td>{voter.address}</td>
             </tr>
             <tr>
-              <th>Name</th>
-              <td>{voter.name}</td>
+              <th>National number</th>
+              <td>{voter.nationalNumber}</td>
             </tr>
             <tr>
               <th>Phone</th>

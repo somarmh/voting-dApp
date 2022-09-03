@@ -6,8 +6,8 @@ import "./Navbar.css";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <nav>
-      <NavLink to="/" className="header">
+    <nav style = {{background: "green"}}>
+      <NavLink to="/" className="header" >
         <i className="fab fa-hive"></i> Home
       </NavLink>
       <ul

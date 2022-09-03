@@ -17,16 +17,14 @@ import Election from "../../contracts/election.json";
 import { ethers } from "ethers";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-//const crypto = require("crypto");
-//const AesEncryption = require('aes-encryption');
+
 export default class Voting extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      randomString: crypto.randomBytes(32).toString("hex"),
+      randomString: '',
       aes:  new AesEncryption(),
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       account: null,
       provider: null,
       isAdmin: false,
@@ -56,16 +54,18 @@ export default class Voting extends Component {
     }
     try {
         if (typeof window.ethereum !== "undefined") {
+            if(localStorage.getItem('secretKey') == null){
+              localStorage.setItem('secretKey', crypto.randomBytes(32).toString("hex"));
+            }
+            if(this.state.randomString === ''){
+              const var1 = localStorage.getItem('secretKey');
+              this.setState({randomString: var1});
+            }
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            const contract = new ethers.Contract(
-                electionAddress,
-                Election.abi,
-                provider
-            );
             
-            const contract1 = new ethers.Contract(
+            const contract = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -74,7 +74,6 @@ export default class Voting extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
             const admin = await this.state.ElectionInstance.getAdmin();
@@ -119,12 +118,10 @@ export default class Voting extends Component {
                     eligible: voter.eligible,
                     hasVoted: voter.hasVoted,
                     blindedVote: voter.blindedVote,
-                    organizersig: voter.organizersig,
-                    inspectorsig: voter.inspectorsig
+                    organizersig: localStorage.getItem('organizersig'),
+                    inspectorsig: localStorage.getItem('inspectorsig')
                 },
             });
-            //console.log(this.state.currentVoter.signedBlindedVote);
-            //this.setState({ hasUsedSig: await this.state.ElectionInstance1.signitureIsUsed(this.state.currentVoter.signedBlindedVote)});
     
         }      
     } catch (error) {
@@ -139,14 +136,9 @@ export default class Voting extends Component {
   renderCandidates = (candidate) => {
 
     const castBallot = async (id) => {
-      console.log(this.state.currentVoter.organizersig);
       console.log('voter1     ' + this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
-      this.setState({
-        currentVoter : {
-          organizersig : "asd"
-        }
-      });
+
       //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
       // Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
 
@@ -155,10 +147,10 @@ export default class Voting extends Component {
 
       console.log('encrypted >>>>>>', encrypted);
       console.log('decrypted >>>>>>', decrypted);
-      console.log(this.state.currentVoter.organizersig);
+      console.log(localStorage.getItem('organizersig'));
+      console.log(localStorage.getItem('inspectorsig'));
 
-
-      await this.state.ElectionInstance1.vote(id, this.state.randomString, "dsd" ,this.state.currentVoter.inspectorsig);
+      await this.state.ElectionInstance.vote(id, this.state.randomString, localStorage.getItem('organizersig') ,localStorage.getItem('inspectorsig'));
       //window.location.reload();
     };
     const Vote = (id) => {
@@ -188,21 +180,11 @@ export default class Voting extends Component {
     );
   };
   handleChange = (event) => {
-    this.setState({
-      currentVoter : {
-        organizersig : event.target.value
-      }
-    });
-    console.log(this.state.currentVoter.organizersig);
+    localStorage.setItem('organizersig',event.target.value);
   }
 
   handleChange1 = (event) => {
-    this.setState({
-      currentVoter : {
-        inspectorsig : event.target.value
-      }
-    });
-    console.log(this.state.currentVoter.organizersig);
+    localStorage.setItem('inspectorsig',event.target.value);
   }
 
   handleSubmit(event) {

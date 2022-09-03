@@ -4,8 +4,6 @@ import Navbar from "../../Navbar/Navigation";
 import NavbarAdmin from "../../Navbar/NavigationAdmin";
 import NavbarOrganizer from "../../Navbar/NavigationOrganizer";
 import Election from "../../../contracts/election.json";
-import BlindSignature from 'blind-signatures';
-//37341274217401084917093058644698059369
 import "./Verification.css";
 
 import { ethers } from "ethers";
@@ -15,9 +13,7 @@ export default class Registration extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      //key: crypto.generateKeyPairSync("rsa", {modulusLength: 2048,}),
       ElectionInstance: undefined,
-      ElectionInstance1: undefined,
       account: null,
       provider: null,
       isAdmin: false,
@@ -35,18 +31,11 @@ export default class Registration extends Component {
     }
     try {
         if (typeof window.ethereum !== "undefined") {
-            console.log(localStorage.getItem('OrganizerPrivateKey'));
-            console.log(localStorage.getItem('InspectorPrivateKey'));
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            const contract = new ethers.Contract(
-                electionAddress,
-                Election.abi,
-                provider
-            );
             
-            const contract1 = new ethers.Contract(
+            const contract = new ethers.Contract(
                 electionAddress,
                 Election.abi,
                 signer
@@ -55,7 +44,6 @@ export default class Registration extends Component {
             this.setState({
                 provider: provider,
                 ElectionInstance: contract,
-                ElectionInstance1: contract1,
                 account: accounts[0],
             });
 
@@ -64,17 +52,15 @@ export default class Registration extends Component {
             this.setState({ candidateCount: candidateCount });
 
             const admin = await this.state.ElectionInstance.getAdmin();
-            //console.log(this.state.account);
             
             if(this.state.account === admin.toLowerCase()) {
                 this.setState({ isAdmin: true });
             }
 
             const orgnaizer = await this.state.ElectionInstance.getOrganizerAddress();
-            //console.log(orgnaizer);
+
             // Get election start and end values
             if(this.state.account === orgnaizer.toLowerCase()) {
-                //console.log("SDF");
                 this.setState({ isOrganizer: true });
             }
            
@@ -82,15 +68,15 @@ export default class Registration extends Component {
             // Total number of voters
             const voterCount = await this.state.ElectionInstance.getTotalVoter();
             this.setState({ voterCount: voterCount });
+
             // Loading all the voters
-            //console.log("dszf" + this.state.voterCount.toNumber());
             for (let i = 0; i < this.state.voterCount.toNumber(); i++) {
                 const voterAddress = await this.state.ElectionInstance.voters(i);
                 const voter = await this.state.ElectionInstance.Voters(voterAddress);
                 this.state.voters.push({
                     address: voter.voterAddress,
-                    name: voter.name,
                     phone: voter.phone,
+                    nationalNumber: voter.nationalNumber,
                     hasVoted: voter.hasVoted,
                     isRegistered: voter.isRegistered,
                     eligible: voter.eligible,
@@ -100,7 +86,6 @@ export default class Registration extends Component {
                 });
                 
             }
-            //console.log(this.state.voters[0].signedBlindedVote);
             this.setState({ voters: this.state.voters });
 
     }
@@ -116,79 +101,72 @@ export default class Registration extends Component {
   renderUnverifiedVoters = (voter , index) => {
     console.log(index);
     const verifyVoter = async (verifiedStatus, address) => {
-      console.log("DSFA");
-      await this.state.ElectionInstance1.verifyVoter(verifiedStatus, address);
-      console.log("fad");
+      await this.state.ElectionInstance.verifyVoter(verifiedStatus, address);
       window.location.reload();
     };
     const generateSig = async (address, blindedVote) => {
-       
       /*
-      Convert a string into an ArrayBuffer
-      from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
-      */
-      function str2ab(str) {
-        const buf = new ArrayBuffer(str.length);
-        const bufView = new Uint8Array(buf);
-        for (let i = 0, strLen = str.length; i < strLen; i++) {
-          bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
-      }
-
-
-      /*
-      Import a PEM encoded RSA private key, to use for RSA-PSS signing.
-      Takes a string containing the PEM encoded key, and returns a Promise
+      Import a JSON Web Key format EC private key, to use for ECDSA signing.
+      Takes a string containing the JSON Web Key, and returns a Promise
       that will resolve to a CryptoKey representing the private key.
       */
-      function importPrivateKey(pem) {
-        console.log(pem);
-        // fetch the part of the PEM string between header and footer
-        const pemHeader = "-----BEGIN PRIVATE KEY-----";
-        const pemFooter = "-----END PRIVATE KEY-----";
-        const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
-        // base64 decode the string to get the binary data
-        const binaryDerString = window.atob(pemContents);
-        // convert from a binary string to an ArrayBuffer
-        const binaryDer = str2ab(binaryDerString);
-
+      function importPrivateKey(jwk) {
         return window.crypto.subtle.importKey(
-          "pkcs8",
-          binaryDer,
+          "jwk",
+          jwk,
           {
-            name: "RSA-PSS",
-            // Consider using a 4096-bit key for systems that require long-term security
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([1, 0, 1]),
-            hash: "SHA-256",
+            name: "ECDSA",
+            namedCurve: "P-384"
           },
           true,
           ["sign"]
         );
       }
 
+      const jwkEcKey = JSON.parse(localStorage.getItem('OrganizerPrivateKey'));
+      const pbb = JSON.parse(localStorage.getItem('OrganizerPublicKey'));
 
-      console.log(localStorage.getItem('OrganizerPrivateKey'));
-      const pemEncodedKey = localStorage.getItem('OrganizerPrivateKey');
-
-      const signingKey = await importPrivateKey(pemEncodedKey);
+      const importedOrganizerPublicKey = await importpublicKey(pbb);
+      const signingKey = await importPrivateKey(jwkEcKey);
       const enc = new TextEncoder();
-      const encoded = enc.encode(blindedVote);;
-      console.log(signingKey);
+      const encoded = enc.encode(blindedVote);
+      async function verify(publicKey, sig) {
+      let result = await window.crypto.subtle.verify(
+        {
+            name: "ECDSA",
+            hash: {name: "SHA-384"},
+        },
+        publicKey,
+        sig,
+        encoded
+      );
+      return result;
+      }
+
+      function importpublicKey(jwk) {
+        return window.crypto.subtle.importKey(
+          "jwk",
+          jwk,
+          {
+            name: "ECDSA",
+            namedCurve: "P-384"
+          },
+          true,
+          ["verify"]
+        );
+      }
       const signature = await window.crypto.subtle.sign(
         {
-          name: "RSA-PSS",
-          saltLength: 16,
+          name: "ECDSA",
+          hash: "SHA-384"
         },
         signingKey,
         encoded
       );
-      const encoded1 = enc.encode(signature);
-      
-      const sig = encoded1.toString();
-      console.log(sig);
-      await this.state.ElectionInstance1.writeOrganizerSig(address, sig);
+      let osig = await verify(importedOrganizerPublicKey, signature);
+      var ab2str = require('arraybuffer-to-string');
+      const sig = ab2str(signature, 'base64');
+      await this.state.ElectionInstance.writeOrganizerSig(address, sig);
       window.location.reload();
     };
     return (
@@ -196,16 +174,16 @@ export default class Registration extends Component {
         {   
         voter.eligible ? (
           <div className="container-list success">
-            <p style={{ margin: "7px 0px" }}>AC: {voter.address}</p>
+            <p style={{ margin: "7px 0px", width: "70px"}}>AC: {voter.address}</p>
             <table>
               <tr>
-                <th>Name</th>
+                <th>national number</th>
                 <th>Phone</th>
                 <th>blindedVote</th>
                 <th>Organizer Signiture</th>
               </tr>
               <tr>
-                <td>{voter.name}</td>
+                <td>{voter.nationalNumber}</td>
                 <td>{voter.phone}</td>
                 <td>{voter.blindedVote}</td>
                 <td>{voter.organizersig}</td>
@@ -233,8 +211,8 @@ export default class Registration extends Component {
               <td>{voter.address}</td>
             </tr>
             <tr>
-              <th>Name</th>
-              <td>{voter.name}</td>
+              <th>National number</th>
+              <td>{voter.nationalNumber}</td>
             </tr>
             <tr>
               <th>Phone</th>
@@ -275,14 +253,6 @@ export default class Registration extends Component {
         </>
       );
     }
-    /*if (!this.state.isAdmin && ) {
-      return (
-        <>
-          <Navbar />
-          <AdminOnly page="Verification Page." />
-        </>
-      );
-    }*/
     return (
       <>
         <NavbarOrganizer />

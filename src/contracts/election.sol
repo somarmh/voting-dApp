@@ -8,7 +8,7 @@ contract Election {
     uint256 public candidateCount;
     uint256 voterCount;
     uint256 numOfBallots;
-    mapping(uint256 => Candidate) public candidateDetails;
+    mapping(uint256 => Candidate) public candidateDetails; // array of candidates
     mapping(address => Voter) public Voters; // array of eligible voters
     mapping(string => address) public blindedVotes; // array of blinded votes
     mapping(string => bool) public usedSignatures; // array of used signatures
@@ -20,8 +20,6 @@ contract Election {
     constructor() {
         // Initilizing default values
         admin = msg.sender;
-        //candidateCount = 0;
-        //numOfBallots = 0;
     }
 
     modifier onlyAdmin() {
@@ -31,6 +29,7 @@ contract Election {
     }
 
     modifier onlyOrganizer() {
+        // Modifier for only Organizer access
         require(
             msg.sender == organizer.organizerAddress,
             "Caller is not organizer"
@@ -39,6 +38,7 @@ contract Election {
     }
 
     modifier onlyInspector() {
+        // Modifier for only Inspector access
         require(
             msg.sender == inspector.inspectorAddress,
             "Caller is not organizer"
@@ -198,7 +198,7 @@ contract Election {
     // structure that stores voter data
     struct Voter {
         address voterAddress;
-        string name;
+        string nationalNumber;
         string phone;
         bool eligible;
         bool hasVoted;
@@ -209,10 +209,13 @@ contract Election {
     }
 
     // Request to be added as voter
-    function registerAsVoter(string memory _name, string memory _phone) public {
+    function registerAsVoter(
+        string memory _nationalNumber,
+        string memory _phone
+    ) public {
         Voter memory newVoter = Voter({
             voterAddress: msg.sender,
-            name: _name,
+            nationalNumber: _nationalNumber,
             phone: _phone,
             eligible: false,
             hasVoted: false,
@@ -264,13 +267,14 @@ contract Election {
         string inspectorsig;
     }
 
-    // if the blind signature hasn't been used yet and is correct, the vote is valid
     function vote(
         uint256 _choiceCode,
         string memory _secretKey,
         string memory _organizersig,
         string memory _inspectorsig
     ) public {
+        require(start, "Election has not not been started");
+        require(!end, "Election has been ended");
         Ballot memory newBallot = Ballot({
             choiceCode: _choiceCode,
             secretKey: _secretKey,
@@ -283,10 +287,10 @@ contract Election {
 
     function validBallots(string memory _blindVote, uint256 _choiceCode)
         public
-        onlyAdmin
+        onlyOrganizer
     {
-        //require(!usedSignatures[_signedVote], "This signature has been used");
-        //require(!end, "Vote is not finished");
+        require(!usedSignatures[_blindVote], "This signature has been used");
+        require(end, "Vote is not finished");
         usedSignatures[_blindVote] = true;
         candidateDetails[_choiceCode].voteCount += 1;
     }
