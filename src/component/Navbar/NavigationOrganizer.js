@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { FaPoll, FaHome } from "react-icons/fa";
+import { MdVerifiedUser } from "react-icons/md";
+import { FcSignature } from "react-icons/fc";
 
 import "./Navbar.css";
 
@@ -9,7 +12,7 @@ export default function NavbarOrganizer() {
     <nav>
       <div className="header">
         <NavLink to="/">
-          <i className="fab fa-hive" /> Organizer
+          <i className="fab fa-hive" /> <FaHome/> Organizer
         </NavLink>
       </div>
       <ul
@@ -19,7 +22,7 @@ export default function NavbarOrganizer() {
        
        <li>
           <NavLink to="/Verification" activeClassName="nav-active">
-            Verification
+            <MdVerifiedUser/> Verification
           </NavLink>
         </li>
 
@@ -31,7 +34,7 @@ export default function NavbarOrganizer() {
 
         <li>
           <NavLink to="/Results" activeClassName="nav-active">
-            <i className="fas fa-poll-h" /> Results
+            <i className="fas fa-poll-h" /> <FaPoll/> Results
           </NavLink>
         </li>
       </ul>

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { RiAdminFill } from "react-icons/ri";
+import { FaPoll, FaHome } from "react-icons/fa";
+import { MdPersonAdd } from "react-icons/md";
 
 import "./Navbar.css";
 
@@ -9,7 +12,7 @@ export default function NavbarAdmin() {
     <nav style = {{background: "blue"}}>
       <div className="header">
         <NavLink to="/">
-          <i className="fab fa-hive" /> Admin
+          <i className="fab fa-hive" /> <RiAdminFill/> Admin
         </NavLink>
       </div>
       <ul
@@ -19,13 +22,13 @@ export default function NavbarAdmin() {
        
         <li>
           <NavLink to="/AddCandidate" activeClassName="nav-active">
-            Add Candidate
+            <MdPersonAdd/> Add Candidate
           </NavLink>
         </li>
         
         <li>
           <NavLink to="/Results" activeClassName="nav-active">
-            <i className="fas fa-poll-h" /> Results
+            <i className="fas fa-poll-h" /> <FaPoll/> Results
           </NavLink>
         </li>
       </ul>

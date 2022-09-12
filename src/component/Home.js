@@ -21,12 +21,10 @@ import { ethers } from "ethers";
 
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
-
 export default class Home extends Component {
 
     constructor(props) {
       super(props);
-
       this.state = {
         ElectionInstance: undefined,
         account: null,
@@ -50,8 +48,8 @@ export default class Home extends Component {
         window.location.reload();
       }
       try{
-        if (typeof window.ethereum !== "undefined") {
 
+        if (typeof window.ethereum !== "undefined") {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             
@@ -79,8 +77,6 @@ export default class Home extends Component {
             if(this.state.account === orgnaizer.toLowerCase()) {
                 this.setState({ isOrganizer: true });
                 let pk;
-                console.log(localStorage.getItem('OrganizerPublicKey'));
-                console.log(localStorage.getItem('OrganizerPrivateKey'));
                 if( localStorage.getItem('OrganizerPublicKey') === null) {
                   /*
                   Export the given key and write it into the "exported-key" space.
@@ -92,7 +88,6 @@ export default class Home extends Component {
                     );
                     
                     const pemExported = JSON.stringify(exported, null, " ");
-                    console.log(type + pemExported);
                     if(type == 0 )localStorage.setItem('OrganizerPrivateKey', pemExported);
                     if(type == 1 )localStorage.setItem('OrganizerPublicKey', pemExported);
                   }
@@ -123,23 +118,20 @@ export default class Home extends Component {
                 this.setState({ isInspector: true });
 
                 let pk;
-                console.log(localStorage.getItem('InspectorPublicKey'));
-                console.log(localStorage.getItem('InspectorPrivateKey'));
-                  if( localStorage.getItem('InspectorPublicKey') === null) {
-                    /*
-                    Export the given key and write it into the "exported-key" space.
-                    */
-                    async function exportCryptoKey(key, type) {
-                      const exported = await window.crypto.subtle.exportKey(
-                        "jwk",
-                        key
-                      );
+                if( localStorage.getItem('InspectorPublicKey') === null) {
+                  /*
+                  Export the given key and write it into the "exported-key" space.
+                  */
+                  async function exportCryptoKey(key, type) {
+                    const exported = await window.crypto.subtle.exportKey(
+                      "jwk",
+                      key
+                    );
                       
-                      const pemExported = JSON.stringify(exported, null, " ");
-                      console.log(type + pemExported);
-                      if(type == 0 )localStorage.setItem('InspectorPrivateKey', pemExported);
-                      if(type == 1 )localStorage.setItem('InspectorPublicKey', pemExported);
-                    }
+                    const pemExported = JSON.stringify(exported, null, " ");
+                    if(type == 0 )localStorage.setItem('InspectorPrivateKey', pemExported);
+                    if(type == 1 )localStorage.setItem('InspectorPublicKey', pemExported);
+                  }
                   /*
                   Generate a sign/verify key pair,
                   then set up an event listener on the "Export" button.
@@ -156,13 +148,10 @@ export default class Home extends Component {
                       exportCryptoKey(keyPair.publicKey,1);
                   });            
                      
-                   
-              }}
-              const var2 = await this.state.ElectionInstance.getInspectorSigniturePublicKey();
-              console.log(var2);
-              this.setState({ InspectorPublicKey: var2 });
+            }}
 
-
+            const var2 = await this.state.ElectionInstance.getInspectorSigniturePublicKey();
+            this.setState({ InspectorPublicKey: var2 });
 
             const start = await this.state.ElectionInstance.getStart();
             this.setState({ elStarted: start });
@@ -185,8 +174,6 @@ export default class Home extends Component {
                     organizationTitle: organizationTitle,
                 }
             });
-            console.log(this.state.OrganizerPublicKey);
-            console.log(this.state.InspectorPublicKey);
         }
         }catch (error) {
             // Catch any errors for any of the above operations.
@@ -205,11 +192,11 @@ export default class Home extends Component {
     registerElection = async (data) => {
       await this.state.ElectionInstance
         .setElectionDetails(
-          data.adminFName.toLowerCase() + " " + data.adminLName.toLowerCase(),
-          data.adminEmail.toLowerCase(),
-          data.adminTitle.toLowerCase(),
-          data.electionTitle.toLowerCase(),
-          data.organizationTitle.toLowerCase(),
+          data.adminFName + " " + data.adminLName,
+          data.adminEmail,
+          data.adminTitle,
+          data.electionTitle,
+          data.organizationTitle,
           data.organizerAddress,
           data.inspectorAddress
         )

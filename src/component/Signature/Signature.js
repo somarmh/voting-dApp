@@ -65,7 +65,6 @@ export default class Registration extends Component {
             }
            
             const inspector = await this.state.ElectionInstance.getInspectorAddress();
-            console.log(inspector.toLowerCase());
             if(this.state.account === inspector.toLowerCase()) {
                 this.setState({ isInspector: true });
             }
@@ -73,8 +72,8 @@ export default class Registration extends Component {
             // Total number of voters
             const voterCount = await this.state.ElectionInstance.getTotalVoter()
             this.setState({ voterCount: voterCount });
+
             // Loading all the voters
-            //console.log("dszf" + this.state.voterCount.toNumber());
             for (let i = 0; i < this.state.voterCount.toNumber(); i++) {
                 const voterAddress = await this.state.ElectionInstance.voters(i);
                 const voter = await this.state.ElectionInstance.Voters(voterAddress);
@@ -91,7 +90,6 @@ export default class Registration extends Component {
                 });
                 
             }
-            //console.log(this.state.voters[0].signedBlindedVote);
             this.setState({ voters: this.state.voters });
             
     }
@@ -105,7 +103,6 @@ export default class Registration extends Component {
   };
 
   renderUnverifiedVoters = (voter , index) => {
-    console.log(index);
     const verifyVoter = async (verifiedStatus, address) => {
       await this.state.ElectionInstance.verifyVoter(verifiedStatus, address);
       window.location.reload();
@@ -131,13 +128,11 @@ export default class Registration extends Component {
       }
       
 
-      console.log(localStorage.getItem('InspectorPrivateKey'));
       const jwkEcKey  = JSON.parse(localStorage.getItem('InspectorPrivateKey'));
 
       const signingKey = await importPrivateKey(jwkEcKey);
       const enc = new TextEncoder();
       const encoded = enc.encode(blindedVote);
-      console.log(signingKey);
       const signature = await window.crypto.subtle.sign(
         {
           name: "ECDSA",

@@ -1,7 +1,6 @@
 // Node modules
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-//import crypto = require('crypto');
 import crypto from 'crypto-browserify'
 import AesEncryption from 'aes-encryption'
 // Components
@@ -133,7 +132,6 @@ export default class Voting extends Component {
 
   renderCandidates = (candidate) => {
     const requestSig = async (id) => {
-      console.log(this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
       const encrypted = this.state.aes.encrypt(id.toString());
       const decrypted = this.state.aes.decrypt(encrypted);

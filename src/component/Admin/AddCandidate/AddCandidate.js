@@ -89,9 +89,7 @@ export default class AddCandidate extends Component {
   };
 
   addCandidate = async () => {
-    console.log("222222");
     await this.state.ElectionInstance.addCandidate(this.state.header, this.state.slogan);
-    console.log("111111");
   };
 
   render() {

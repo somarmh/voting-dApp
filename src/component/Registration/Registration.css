@@ -28,3 +28,14 @@
   overflow: auto;
   line-height: 1.5em;
 }
+.App-logo{
+  width: 40vmin;
+  height: 4vmin;
+  pointer-events: none;
+}
+td{
+  text-align: center;
+}
+th{
+  text-align: center;
+}

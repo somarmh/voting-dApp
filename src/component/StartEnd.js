@@ -72,7 +72,6 @@ const StartEnd = (props) => {
           <div className="container-item">
             <button
               type="button"
-              // onClick={this.endElection}
               onClick={props.endElFn}
               style={btn}
             >

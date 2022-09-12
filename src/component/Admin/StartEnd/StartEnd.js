@@ -53,8 +53,6 @@ export default class StartEnd extends Component {
             });
 
             const admin = await this.state.ElectionInstance.getAdmin();
-            //console.log(admin.toLowerCase());
-            //console.log(this.state.account);
             
             if(this.state.account === admin.toLowerCase()) {
                 this.setState({ isAdmin: true });

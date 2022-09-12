@@ -46,7 +46,6 @@ export default class Voting extends Component {
     };
   }
   componentDidMount = async () => {
-    console.log('voter1     ' + this.setState.randomString);
     // refreshing once
     if (!window.location.hash) {
       window.location = window.location + "#loaded";
@@ -136,25 +135,18 @@ export default class Voting extends Component {
   renderCandidates = (candidate) => {
 
     const castBallot = async (id) => {
-      console.log('voter1     ' + this.state.randomString);
       this.state.aes.setSecretKey(this.state.randomString);
 
-      //aes.setSecretKey('11122233344455566677788822244455555555555555555231231321313aaaff')
       // Note: secretKey must be 64 length of only valid HEX characters, 0-9, A, B, C, D, E and F
 
       const encrypted = this.state.aes.encrypt(id.toString());
       const decrypted = this.state.aes.decrypt(encrypted);
 
-      console.log('encrypted >>>>>>', encrypted);
-      console.log('decrypted >>>>>>', decrypted);
-      console.log(localStorage.getItem('organizersig'));
-      console.log(localStorage.getItem('inspectorsig'));
 
       await this.state.ElectionInstance.vote(id, this.state.randomString, localStorage.getItem('organizersig') ,localStorage.getItem('inspectorsig'));
       //window.location.reload();
     };
     const Vote = (id) => {
-      console.log(this.state.currentVoter.organizersig);
         castBallot(id);
     };
     return (
@@ -245,18 +237,6 @@ export default class Voting extends Component {
                 )
               ) : (
                 <>
-                  <div className="container-item attention">
-                    <center>
-                      <p>You're not registered. Please register first.</p>
-                      <br />
-                      <Link
-                        to="/Registration"
-                        style={{ color: "black", textDecoration: "underline" }}
-                      >
-                        Registration Page
-                      </Link>
-                    </center>
-                  </div>
                 </>
               )}
               <div className="container-main">

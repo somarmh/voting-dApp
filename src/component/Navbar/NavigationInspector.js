@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { FaPoll, FaHome, FaFileSignature } from "react-icons/fa";
 
 import "./Navbar.css";
 
@@ -9,7 +10,7 @@ export default function NavbarOrganizer() {
     <nav style = {{background: "red"}}>
       <div className="header">
         <NavLink to="/">
-          <i className="fab fa-hive" /> Inspector
+          <i className="fab fa-hive" /> <FaHome/> Inspector
         </NavLink>
       </div>
       <ul
@@ -19,14 +20,14 @@ export default function NavbarOrganizer() {
        
        <li>
           <NavLink to="/Signature" activeClassName="nav-active">
-            Signature
+            <FaFileSignature/> Signature
           </NavLink>
         </li>
 
 
         <li>
           <NavLink to="/Results" activeClassName="nav-active">
-            <i className="fas fa-poll-h" /> Results
+            <i className="fas fa-poll-h" /> <FaPoll/> Results
           </NavLink>
         </li>
       </ul>

@@ -97,7 +97,6 @@ export default class Registration extends Component {
 
         this.state.aes.setSecretKey(secretKey);
         const encrypted = this.state.aes.encrypt(choiceCode.toString());
-        console.log(encrypted);
         const decrypted = this.state.aes.decrypt(encrypted);
         const enc = new TextEncoder();
         /*
@@ -117,7 +116,6 @@ export default class Registration extends Component {
               sig,
               encoded
             );
-            console.log(result);
             return result;
         }
         

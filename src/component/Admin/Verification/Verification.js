@@ -5,6 +5,7 @@ import NavbarAdmin from "../../Navbar/NavigationAdmin";
 import NavbarOrganizer from "../../Navbar/NavigationOrganizer";
 import Election from "../../../contracts/election.json";
 import "./Verification.css";
+import { FcApproval, FcDisapprove } from "react-icons/fc";
 
 import { ethers } from "ethers";
 const electionAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -99,7 +100,6 @@ export default class Registration extends Component {
   };
 
   renderUnverifiedVoters = (voter , index) => {
-    console.log(index);
     const verifyVoter = async (verifiedStatus, address) => {
       await this.state.ElectionInstance.verifyVoter(verifiedStatus, address);
       window.location.reload();
@@ -220,15 +220,15 @@ export default class Registration extends Component {
             </tr>
             <tr>
               <th>Verified</th>
-              <td>{voter.eligible ? "True" : "False"}</td>
+              <td>{voter.eligible ? <FcApproval className="App-logo" /> : <FcDisapprove className="App-logo"/>}</td>
             </tr>
             <tr>
               <th>Registered</th>
-              <td>{voter.isRegistered ? "True" : "False"}</td>
+              <td>{voter.isRegistered ? <FcApproval className="App-logo" /> : <FcDisapprove className="App-logo"/>}</td>
             </tr>
             <tr>
               <th>has voted</th>
-              <td>{voter.hasVoted ? "True" : "False"}</td>
+              <td>{voter.hasVoted ? <FcApproval className="App-logo" /> : <FcDisapprove className="App-logo"/>}</td>
             </tr>
           </table>
           <div style={{}}>

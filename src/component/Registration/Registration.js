@@ -8,7 +8,7 @@ import NotInit from "../NotInit";
 
 // CSS
 import "./Registration.css";
-
+import { FcApproval, FcDisapprove } from "react-icons/fc";
 // Contract
 import Election from "../../contracts/election.json";
 import { ethers } from "ethers";
@@ -191,6 +191,7 @@ export default class Registration extends Component {
                     provided Phone number does not matches the national number
                     registered in their catalogue.
                   </p>
+                    
                   <button
                     className="btn-add"
                     disabled={
@@ -260,15 +261,15 @@ export function loadCurrentVoter(voter, isRegistered) {
           </tr>
           <tr>
             <th>Voted</th>
-            <td>{voter.hasVoted ? "True" : "False"}</td>
+            <td>{voter.hasVoted ? <FcApproval className="App-logo" /> : <FcDisapprove className="App-logo"/>}</td>
           </tr>
           <tr>
             <th>Verification</th>
-            <td>{voter.isVerified ? "True" : "False"}</td>
+            <td>{voter.isVerified ? <FcApproval className="App-logo"/> : <FcDisapprove className="App-logo"/>}</td>
           </tr>
           <tr>
             <th>Registered</th>
-            <td>{voter.isRegistered ? "True" : "False"}</td>
+            <td>{voter.isRegistered ? <FcApproval className="App-logo"/> : <FcDisapprove className="App-logo"/>}</td>
           </tr>
           <tr>
             <th>blindedVote</th>
